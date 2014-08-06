@@ -1,5 +1,6 @@
 EventEmitter = require('events').EventEmitter
 Promise = require('bluebird')
+Pump = require('./Pump.coffee')
 
 class Tank extends EventEmitter
   constructor: (options) ->
@@ -12,6 +13,13 @@ class Tank extends EventEmitter
 
       @size = 1
       @drain = if options?.drainPromisified then options.drain else Promise.promisify(options.drain)
+
+    if options?.pumpFrom
+      @pump = new Pump
+        from: options.pumpFrom
+        to: @
+
+      do @pump.start
 
   isEmpty: ->
     @content.length == 0

@@ -73,3 +73,15 @@ describe 'Tank', ->
         do done
 
       tank.fill 'test'
+
+  describe 'having pumpFrom', ->
+    it 'should create a pump that pumps from specified tank', (done) ->
+      source = new Tank
+        content: [ 'test' ]
+
+      tank = new Tank
+        pumpFrom: source
+
+      tank.once 'fill', ->
+        tank.content.should.eql [ 'test' ]
+        do done
