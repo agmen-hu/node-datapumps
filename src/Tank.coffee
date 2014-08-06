@@ -21,6 +21,11 @@ class Tank extends EventEmitter
 
       do @pump.start
 
+    if options?.fillFromStream
+      options.fillFromStream.on 'data', (data) => @fill data
+      @on 'full', -> do options.fillFromStream.pause
+      @on 'release', -> do options.fillFromStream.resume
+
   isEmpty: ->
     @content.length == 0
 

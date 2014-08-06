@@ -1,4 +1,5 @@
 require('should')
+sinon = require('sinon')
 Tank = require('../src/Tank.coffee')
 
 describe 'Tank', ->
@@ -85,3 +86,45 @@ describe 'Tank', ->
       tank.once 'fill', ->
         tank.content.should.eql [ 'test' ]
         do done
+
+  describe 'having fillFromStream', ->
+    { PassThrough } = require 'stream'
+
+    it 'should fill the tank from the stream', ->
+      stream = new PassThrough
+        objectMode: true
+
+      tank = new Tank
+        fillFromStream: stream
+
+      stream.write({ foo: 'bar' })
+      tank.getContent().should.eql [{foo: 'bar'}]
+
+    it 'should pause the stream when the tank is full', ->
+      stream = new PassThrough
+        objectMode: true
+
+      tank = new Tank
+        fillFromStream: stream
+        size: 1
+
+      sinon.spy stream, 'pause'
+
+      stream.write('test')
+
+      stream.pause.calledOnce.should.be.true
+
+    it 'should resume the stream when a data is released from the tank', ->
+      stream = new PassThrough
+        objectMode: true
+
+      tank = new Tank
+        fillFromStream: stream
+        size: 1
+
+      sinon.spy stream, 'resume'
+
+      stream.write('test')
+      do tank.release
+
+      stream.resume.calledOnce.should.be.true
