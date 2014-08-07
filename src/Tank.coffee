@@ -6,6 +6,7 @@ class Tank extends EventEmitter
   constructor: (options) ->
     @content = options?.content || []
     @size = options?.size || 10
+    @_sealed = false
 
     if options?.drain
       if options.size
@@ -23,6 +24,7 @@ class Tank extends EventEmitter
 
     if options?.fillFromStream
       options.fillFromStream.on 'data', (data) => @fill data
+      options.fillFromStream.on 'end', => do @.seal
       @on 'full', -> do options.fillFromStream.pause
       @on 'release', -> do options.fillFromStream.resume
 
@@ -36,6 +38,7 @@ class Tank extends EventEmitter
     @content
 
   fill: (data) ->
+    throw new Error('Cannot fill sealed tanks') if @_sealed == true
     throw new Error('Tank is full') if @isFull()
     @content.push data
     @emit 'fill'
@@ -57,7 +60,17 @@ class Tank extends EventEmitter
     throw new Error('Tank is empty') if @isEmpty()
     result = @content.shift()
     @emit 'release'
-    @emit 'empty' if @isEmpty()
+    if @isEmpty()
+      @emit 'empty'
+      @emit 'end' if @_sealed == true
     result
+
+  seal: ->
+    throw new Error('Tank already sealed') if @_sealed == true
+    @_sealed = true
+    @emit 'sealed'
+
+  isSealed: ->
+    @_sealed == true
 
 module.exports = Tank

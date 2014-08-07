@@ -128,3 +128,36 @@ describe 'Tank', ->
       do tank.release
 
       stream.resume.calledOnce.should.be.true
+
+    it 'should seal the tank when the stream ends', (done) ->
+      stream = new PassThrough
+        objectMode: true
+
+      tank = new Tank
+        fillFromStream: stream
+
+      do stream.end
+      tank.on 'sealed', ->
+        do done
+
+
+  describe 'that is sealed', ->
+    it 'should throw error when trying to fill it', ->
+      tank = new Tank
+      tank.fill 'test'
+
+      do tank.seal
+      invalidAction = ->
+        tank.fill 'test2'
+
+      invalidAction.should.throw 'Cannot fill sealed tanks'
+
+    it 'should emit end event if becomes empty when sealed', (done) ->
+      tank = new Tank
+      tank.fill 'test'
+
+      tank.on 'end', ->
+        do done
+
+      do tank.seal
+      do tank.release
