@@ -39,9 +39,7 @@ class Tank extends EventEmitter
     throw new Error('Tank is full') if @isFull()
     @content.push data
     @emit 'fill'
-    @emit 'change'
-    if @isFull()
-      @emit 'full'
+    @emit 'full' if @isFull()
 
     if @drain?
         @drain(@content[0])
@@ -59,9 +57,7 @@ class Tank extends EventEmitter
     throw new Error('Tank is empty') if @isEmpty()
     result = @content.shift()
     @emit 'release'
-    @emit 'change'
-    if @isEmpty()
-      @emit 'empty'
+    @emit 'empty' if @isEmpty()
     result
 
 module.exports = Tank
