@@ -8,7 +8,7 @@ class Pump
   start: ->
     @suckData()
       .then (data) => @pumpData(data)
-      .then => @start()
+      .done => @start()
 
   suckData: ->
     if !@from.isEmpty()
