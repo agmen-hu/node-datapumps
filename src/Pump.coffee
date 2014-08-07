@@ -5,6 +5,10 @@ class Pump
     @from = options.from
     @to = options.to
 
+    if options.sealTargetWhenSourceEnded ? true
+      @from.on 'end', =>
+        do @to.seal if !@to.isSealed()
+
   start: ->
     @suckData()
       .then (data) => @pumpData(data)

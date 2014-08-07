@@ -7,6 +7,7 @@ describe 'Pump', ->
     it 'should pump content from source to target tank', (done) ->
       tank1 =
         content: [ 'foo', 'bar', 'test', 'content' ]
+        on: ->
         isEmpty: ->
           tank1.content.length == 0
 
@@ -33,6 +34,7 @@ describe 'Pump', ->
 
     describe 'when source tank is empty', ->
       tank1 =
+        on: ->
         isEmpty: -> true
         release: -> 'test'
 
@@ -65,6 +67,7 @@ describe 'Pump', ->
 
     describe 'when target tank is full', ->
       tank1 =
+        on: ->
         content: [ 'test' ]
         isEmpty: ->
           tank1.content.length == 0
@@ -100,3 +103,21 @@ describe 'Pump', ->
           to: tank2
 
         pump.start()
+
+  it 'should seal target tank when source tank ends if not specified otherwise', ->
+    tank1 =
+      isEmpty: -> true
+      release: -> 'test'
+
+      on: sinon.spy (event, callback) -> tank1.eventCallback = callback
+
+    tank2 =
+      isSealed: -> false
+      seal: sinon.spy()
+
+    pump = new Pump
+      from: tank1
+      to: tank2
+
+    do tank1.eventCallback
+    tank2.seal.calledOnce.should.be.true
