@@ -121,3 +121,31 @@ describe 'Pump', ->
 
     do tank1.eventCallback
     tank2.seal.calledOnce.should.be.true
+
+  it 'should be able to transform the data', (done) ->
+    tank1 =
+      content: [ 'foo', 'bar' ]
+      on: ->
+      isEmpty: ->
+        tank1.content.length == 0
+
+      release: ->
+        result = tank1.content.shift()
+
+      once: (event, cb) ->
+        event.should.equal 'fill'
+        tank2.fill.getCall(0).args[0].should.equal 'foo!'
+        tank2.fill.getCall(1).args[0].should.equal 'bar!'
+        done()
+
+    tank2 =
+      isFull: -> false
+      fill: sinon.spy()
+
+    pump = new Pump
+      from: tank1
+      to: tank2
+      transform: (data, cb) ->
+        cb(null, data + '!')
+
+    pump.start()

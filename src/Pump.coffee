@@ -9,8 +9,14 @@ class Pump
       @from.on 'end', =>
         do @to.seal if !@to.isSealed()
 
+    if options?.transform
+      @transform = Promise.promisify(options.transform)
+
   start: ->
-    @suckData()
+    whenDataAvailable = @suckData()
+    if @transform?
+      whenDataAvailable = whenDataAvailable.then (data) => @transform(data)
+    whenDataAvailable
       .then (data) => @pumpData(data)
       .done => @start()
 
