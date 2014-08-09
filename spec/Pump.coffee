@@ -29,6 +29,35 @@ describe 'Pump', ->
 
       pump.start()
 
+    it 'should not be possible to change source tank after start', ->
+      source =
+        on: ->
+        isEmpty: -> true
+        once: ->
+
+      pump = new Pump
+      ( ->
+        pump
+          .from source
+          .start()
+          .from source
+      ).should.throw 'Cannot change source tank after pumping has been started'
+
+    it 'should not be possible to change output tank after start', ->
+      source =
+        on: ->
+        isEmpty: -> true
+        once: ->
+
+      pump = new Pump
+      ( ->
+        pump
+          .from source
+          .start()
+          .tanks { output: source }
+      ).should.throw 'Cannot change output tanks after pumping has been started'
+
+
     describe 'when source tank is empty', ->
       tank1 =
         on: ->
@@ -37,9 +66,8 @@ describe 'Pump', ->
 
         once: sinon.spy (event, callback) -> tank1.fillEventCallback = callback
 
-      pump = new Pump
-
       it 'should wait for fill event on source tank', ->
+        pump = new Pump
         pump
           .from tank1
           .start()
@@ -47,6 +75,8 @@ describe 'Pump', ->
         tank1.once.calledOnce.should.be.true
 
       it 'should fill target tank when fill event is triggered', (done) ->
+        pump = new Pump
+
         pump.tank().fillAsync = sinon.spy (data) ->
           data.should.equal "test"
           done()
