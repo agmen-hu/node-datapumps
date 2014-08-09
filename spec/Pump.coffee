@@ -4,7 +4,7 @@ Pump = require('../src/Pump.coffee')
 
 describe 'Pump', ->
   describe '#start()', ->
-    it 'should pump content from source to target tank', (done) ->
+    it 'should pump content from source to output tank', (done) ->
       tank1 =
         content: [ 'foo', 'bar', 'test', 'content' ]
         on: ->
@@ -16,19 +16,16 @@ describe 'Pump', ->
 
         once: ->
           # we will arrive here after tank1 is emptied
-          tank2.fill.getCall(0).args[0].should.equal 'foo'
-          tank2.fill.getCall(1).args[0].should.equal 'bar'
-          tank2.fill.getCall(2).args[0].should.equal 'test'
-          tank2.fill.getCall(3).args[0].should.equal 'content'
+          pump.tank('output').fill.getCall(0).args[0].should.equal 'foo'
+          pump.tank('output').fill.getCall(1).args[0].should.equal 'bar'
+          pump.tank('output').fill.getCall(2).args[0].should.equal 'test'
+          pump.tank('output').fill.getCall(3).args[0].should.equal 'content'
           done()
 
-      tank2 =
-        isFull: -> false
-        fill: sinon.spy()
-
       pump = new Pump
-        from: tank1
-        to: tank2
+      pump.from tank1
+
+      sinon.spy(pump.tank(), 'fill')
 
       pump.start()
 
@@ -40,71 +37,27 @@ describe 'Pump', ->
 
         once: sinon.spy (event, callback) -> tank1.fillEventCallback = callback
 
-      tank2 =
-        isFull: -> false
-        fill: ->
+      pump = new Pump
 
       it 'should wait for fill event on source tank', ->
-        pump = new Pump
-          from: tank1
-          to: tank2
-
-        pump.start()
+        pump
+          .from tank1
+          .start()
 
         tank1.once.calledOnce.should.be.true
 
       it 'should fill target tank when fill event is triggered', (done) ->
-        tank2.fill = sinon.spy (data) ->
+        pump.tank().fillAsync = sinon.spy (data) ->
           data.should.equal "test"
           done()
 
-        pump = new Pump
-          from: tank1
-          to: tank2
+        pump
+          .from tank1
+          .start()
 
-        pump.start()
         tank1.fillEventCallback()
 
-    describe 'when target tank is full', ->
-      tank1 =
-        on: ->
-        content: [ 'test' ]
-        isEmpty: ->
-          tank1.content.length == 0
-        release: ->
-          result = tank1.content.shift()
-        once: ->
-
-      tank2 =
-        isFull: -> true
-        fill: sinon.spy()
-
-      it 'should wait for release event on target tank', (done) ->
-        tank2.once = sinon.spy ->
-          done()
-
-        pump = new Pump
-          from: tank1
-          to: tank2
-
-        pump.start()
-
-      it 'should fill target tank when release event is triggered', (done) ->
-        tank1.content = [ 'test' ]
-        tank2.once = sinon.spy (event, callback) ->
-          callback()
-
-        tank2.fill = sinon.spy (data) ->
-          data.should.equal "test"
-          done()
-
-        pump = new Pump
-          from: tank1
-          to: tank2
-
-        pump.start()
-
-  it 'should seal target tank when source tank ends if not specified otherwise', ->
+  xit 'should seal target tank when source tank ends if not specified otherwise', ->
     tank1 =
       isEmpty: -> true
       release: -> 'test'
@@ -134,18 +87,16 @@ describe 'Pump', ->
 
       once: (event, cb) ->
         event.should.equal 'fill'
-        tank2.fill.getCall(0).args[0].should.equal 'foo!'
-        tank2.fill.getCall(1).args[0].should.equal 'bar!'
+        pump.tank().fill.getCall(0).args[0].should.equal 'foo!'
+        pump.tank().fill.getCall(1).args[0].should.equal 'bar!'
         done()
 
-    tank2 =
-      isFull: -> false
-      fill: sinon.spy()
-
     pump = new Pump
-      from: tank1
-      to: tank2
-      transform: (data, cb) ->
-        cb(null, data + '!')
+    pump
+      .from tank1
+      .process (data) ->
+        @tank().fillAsync data + '!'
+
+    sinon.spy(pump.tank(), 'fill')
 
     pump.start()

@@ -1,40 +1,44 @@
 Promise = require('bluebird')
+Tank = require('./Tank')
 
 class Pump
   constructor: (options) ->
-    @from = options.from
-    @to = options.to
+    @tanks
+      output: new Tank
 
-    if options.sealTargetWhenSourceEnded ? true
-      @from.on 'end', =>
-        do @to.seal if !@to.isSealed()
+  from: (tank = null) ->
+    return @_from if tank == null
+    @_from = tank
+    @
 
-    if options?.transform
-      @transform = Promise.promisify(options.transform)
+  tanks: (tanks = null) ->
+    return @_tanks if tanks == null
+    @_tanks = tanks
+    @
+
+  tank: (name = 'output') ->
+    throw new Error("No such tank: #{name}") if !@_tanks[name]
+    @_tanks[name]
 
   start: ->
-    whenDataAvailable = @suckData()
-    if @transform?
-      whenDataAvailable = whenDataAvailable.then (data) => @transform(data)
-    whenDataAvailable
-      .then (data) => @pumpData(data)
+    @suckData()
+      .then (data) => @_process(data)
       .done => @start()
 
   suckData: ->
-    if !@from.isEmpty()
-      Promise.resolve(@from.release())
+    if !@_from.isEmpty()
+      Promise.resolve(@_from.release())
     else
       new Promise (resolve, reject) =>
-        @from.once 'fill', =>
-          resolve(@from.release())
+        @_from.once 'fill', =>
+          resolve(@_from.release())
 
-  pumpData: (data) ->
-    if !@to.isFull()
-      Promise.resolve(@to.fill(data))
-    else
-      new Promise (resolve, reject) =>
-        @to.once 'release', =>
-          @to.fill(data)
-          resolve()
+  _process: (data) ->
+    @tank().fillAsync data
+
+  process: (fn) ->
+    throw new Error('Process method must be a function') if typeof fn != 'function'
+    @_process = fn.bind @
+    @
 
 module.exports = Pump
