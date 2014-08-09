@@ -123,3 +123,11 @@ describe 'Tank', ->
 
       do tank.seal
       do tank.release
+
+    it 'should emit end event if sealed when empty', (done) ->
+      tank = new Tank
+
+      tank.on 'end', ->
+        do done
+
+      do tank.seal

@@ -65,6 +65,7 @@ class Tank extends EventEmitter
     throw new Error('Tank already sealed') if @_sealed == true
     @_sealed = true
     @emit 'sealed'
+    @emit 'end' if @isEmpty()
 
   isSealed: ->
     @_sealed == true
