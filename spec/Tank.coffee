@@ -18,9 +18,9 @@ describe 'Tank', ->
       tank = new Tank
         size: 1
       tank.fill('test')
-      callFillAgain = ->
+      ( ->
         tank.fill('again')
-      callFillAgain.should.throw 'Tank is full'
+      ).should.throw 'Tank is full'
 
     it 'should emit full event when the tank becomes full', (done) ->
       tank = new Tank
@@ -70,28 +70,26 @@ describe 'Tank', ->
     it 'should throw error when tank is empty', ->
       tank = new Tank
 
-      callRelease = ->
+      ( ->
         tank.release()
-      callRelease.should.throw 'Tank is empty'
+      ).should.throw 'Tank is empty'
 
   describe 'having a drain option', ->
     it 'should not have size option specified', ->
-      invalidInstantiation = ->
+      ( ->
         new Tank
           drain: (data, cb) ->
           size: 5
-
-      invalidInstantiation.should.throw 'Cannot specify size option for a tank with drain option'
+      ).should.throw 'Cannot specify size option for a tank with drain option'
 
     it 'should not be able to release data manually', ->
       tank = new Tank
         drain: (data, cb) ->
           do cb
 
-      invalidCall = ->
+      ( ->
         do tank.release
-
-      invalidCall.should.throw 'Content is automatically released through the callback given in drain option'
+      ).should.throw 'Content is automatically released through the callback given in drain option'
 
     it 'should release any filled item using the promisifiable drain function', (done) ->
       tank = new Tank
@@ -109,10 +107,9 @@ describe 'Tank', ->
       tank.fill 'test'
 
       do tank.seal
-      invalidAction = ->
+      ( ->
         tank.fill 'test2'
-
-      invalidAction.should.throw 'Cannot fill sealed tanks'
+      ).should.throw 'Cannot fill sealed tanks'
 
     it 'should emit end event if becomes empty when sealed', (done) ->
       tank = new Tank
