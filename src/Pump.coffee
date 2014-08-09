@@ -42,26 +42,21 @@ class Pump extends EventEmitter
     @
 
   _pump: ->
-    if @_state == Pump.SOURCE_ENDED
-      do @subscribeForOutputTankEnds
-      return
+    return do @subscribeForOutputTankEnds if @_state == Pump.SOURCE_ENDED
 
     @suckData()
       .then (data) => @_process data
       .done => do @_pump
 
   subscribeForOutputTankEnds: ->
-    @_outputTankEnded = {}
     for name, tank of @_tanks
-      @_outputTankEnded[name] = false
-      tank.on 'end', =>
-        @_outputTankEnded[name] = true
-        for name, state of @_outputTankEnded
-          return if state == false
-        @emit 'end'
-
-    for name, tank of @_tanks
+      tank.on 'end', @outputTankEnded.bind @
       do tank.seal
+
+  outputTankEnded: ->
+    for name, tank of @_tanks
+      return if !tank.isEnded()
+    @emit 'end'
 
   suckData: ->
     if !@_from

@@ -70,4 +70,7 @@ class Tank extends EventEmitter
   isSealed: ->
     @_sealed == true
 
+  isEnded: ->
+    @isSealed() && @isEmpty()
+
 module.exports = Tank
