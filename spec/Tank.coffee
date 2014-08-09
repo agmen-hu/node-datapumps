@@ -1,4 +1,5 @@
 require('should')
+Promise = require('bluebird')
 sinon = require('sinon')
 Tank = require('../src/Tank.coffee')
 
@@ -30,6 +31,33 @@ describe 'Tank', ->
         done()
 
       tank.fill('test')
+
+  describe '#fillAsync(data)', ->
+    it 'should fill tank when not full', (done) ->
+      tank = new Tank
+
+      tank.fillAsync 'test'
+        .then ->
+          tank.getContent().should.eql [ 'test' ]
+          do done
+
+    it 'should wait for a release event to fill the tank', (done) ->
+      tank = new Tank
+        size: 1
+
+      tank.fill('test')
+      tank.fillAsync 'test2'
+        .then ->
+          tank.getContent().should.eql [ 'test2' ]
+          do done
+
+      do tank.release
+
+    it 'should return a promise', ->
+      tank = new Tank
+
+      promise = tank.fillAsync 'test'
+      promise.should.be.an.instanceOf(Promise)
 
   describe '#release()', ->
     it 'should return first data item when not empty', ->

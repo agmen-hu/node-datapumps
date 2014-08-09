@@ -37,6 +37,15 @@ class Tank extends EventEmitter
 
     @
 
+  fillAsync: (data) ->
+    if !@isFull()
+      Promise.resolve(@fill(data))
+    else
+      new Promise (resolve, reject) =>
+        @once 'release', =>
+          @fill(data)
+          resolve()
+
   release: ->
     if @drain?
       throw new Error('Content is automatically released through the callback given in drain option')
