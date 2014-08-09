@@ -15,19 +15,6 @@ class Tank extends EventEmitter
       @size = 1
       @drain = if options?.drainPromisified then options.drain else Promise.promisify(options.drain)
 
-    if options?.pumpFrom
-      @pump = new Pump
-        from: options.pumpFrom
-        to: @
-
-      do @pump.start
-
-    if options?.fillFromStream
-      options.fillFromStream.on 'data', (data) => @fill data
-      options.fillFromStream.on 'end', => do @.seal
-      @on 'full', -> do options.fillFromStream.pause
-      @on 'release', -> do options.fillFromStream.resume
-
   isEmpty: ->
     @content.length == 0
 
