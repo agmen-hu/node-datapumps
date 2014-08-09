@@ -87,23 +87,38 @@ describe 'Pump', ->
 
         tank1.fillEventCallback()
 
-  xit 'should seal target tank when source tank ends if not specified otherwise', ->
-    tank1 =
+  it 'should seal output tanks when source tank ends', ->
+    source =
+      on: ->
       isEmpty: -> true
-      release: -> 'test'
-
-      on: sinon.spy (event, callback) -> tank1.eventCallback = callback
-
-    tank2 =
-      isSealed: -> false
-      seal: sinon.spy()
+      callbacks: {}
+      on: sinon.spy (event, callback) -> source.callbacks[event] = callback
 
     pump = new Pump
-      from: tank1
-      to: tank2
+    pump.from source
 
-    do tank1.eventCallback
-    tank2.seal.calledOnce.should.be.true
+    sinon.spy pump.tank(), 'seal'
+    do source.callbacks.end
+    do pump.start
+    pump.tank().seal.calledOnce.should.be.true
+
+  it 'should emit end event when all output tanks ended', ->
+    source =
+      on: ->
+      isEmpty: -> true
+      callbacks: {}
+      on: sinon.spy (event, callback) -> source.callbacks[event] = callback
+
+    pump = new Pump
+    pump.from source
+
+    sinon.spy pump.tank(), 'seal'
+    endSpy = sinon.spy()
+    pump.on 'end', endSpy
+    do source.callbacks.end
+    do pump.start
+
+    endSpy.calledOnce.should.be.true
 
   it 'should be able to transform the data', (done) ->
     tank1 =
