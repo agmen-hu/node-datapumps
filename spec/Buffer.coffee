@@ -74,6 +74,16 @@ describe 'Buffer', ->
         buffer.read()
       ).should.throw 'Buffer is empty'
 
+  describe '#readAsync()', ->
+    it 'should return a promise fulfilled when the buffer is readable', (done) ->
+      buffer = new Buffer
+
+      buffer.write 'test'
+      buffer.readAsync()
+        .then (result) ->
+          result.should.equal 'test'
+          do done
+
   describe 'having a drain option', ->
     it 'should not have size option specified', ->
       ( ->

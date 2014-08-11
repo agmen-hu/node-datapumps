@@ -60,6 +60,14 @@ class Buffer extends EventEmitter
       @emit 'end' if @_sealed == true
     result
 
+  readAsync: ->
+    if !@isEmpty()
+      Promise.resolve(@read())
+    else
+      new Promise (resolve, reject) =>
+        @once 'write', =>
+          resolve(@read())
+
   seal: ->
     throw new Error('Buffer already sealed') if @_sealed == true
     @_sealed = true

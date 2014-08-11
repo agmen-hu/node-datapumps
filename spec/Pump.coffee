@@ -1,5 +1,6 @@
 require('should')
 sinon = require('sinon')
+Promise = require('bluebird')
 Pump = require('../src/Pump.coffee')
 
 describe 'Pump', ->
@@ -7,33 +8,39 @@ describe 'Pump', ->
     it 'should pump content from source to output buffer', (done) ->
       buffer1 =
         content: [ 'foo', 'bar', 'test', 'content' ]
-        on: ->
-        isEmpty: ->
-          buffer1.content.length == 0
+        eventHandlers: {}
+        on: (event, cb) -> buffer1.eventHandlers[event] = cb
 
-        read: ->
-          result = buffer1.content.shift()
-
-        once: ->
-          # we will arrive here after buffer1 is emptied
-          pump.buffer('output').write.getCall(0).args[0].should.equal 'foo'
-          pump.buffer('output').write.getCall(1).args[0].should.equal 'bar'
-          pump.buffer('output').write.getCall(2).args[0].should.equal 'test'
-          pump.buffer('output').write.getCall(3).args[0].should.equal 'content'
-          done()
+        readAsync: ->
+          result = Promise.resolve(buffer1.content.shift())
+          if buffer1.content.length == 0
+            do buffer1.eventHandlers.end
+          result
 
       pump = new Pump
       pump.from buffer1
 
       sinon.spy(pump.buffer(), 'write')
 
+      pump.on 'end', ->
+        pump.buffer().write.getCall(0).args[0].should.equal 'foo'
+        pump.buffer().write.getCall(1).args[0].should.equal 'bar'
+        pump.buffer().write.getCall(2).args[0].should.equal 'test'
+        pump.buffer().write.getCall(3).args[0].should.equal 'content'
+        done()
+
       pump.start()
+      pump.buffer().readAsync()
+        .then => pump.buffer().readAsync()
+        .then => pump.buffer().readAsync()
+        .then => pump.buffer().readAsync()
 
     it 'should not be possible to change source buffer after start', ->
       source =
         on: ->
         isEmpty: -> true
         once: ->
+        readAsync: -> Promise.resolve()
 
       pump = new Pump
       ( ->
@@ -48,6 +55,7 @@ describe 'Pump', ->
         on: ->
         isEmpty: -> true
         once: ->
+        readAsync: -> Promise.resolve()
 
       pump = new Pump
       ( ->
@@ -58,34 +66,23 @@ describe 'Pump', ->
       ).should.throw 'Cannot change output buffers after pumping has been started'
 
 
-    describe 'when source buffer is empty', ->
+    it 'should write target buffer when source is readable', (done) ->
       buffer1 =
         on: ->
         isEmpty: -> true
-        read: -> 'test'
+        once: ->
+        size: 1
+        readAsync: -> if buffer1.size-- then Promise.resolve('test') else new Promise ->
 
-        once: sinon.spy (event, callback) -> buffer1.writeEventCallback = callback
+      pump = new Pump
 
-      it 'should wait for write event on source buffer', ->
-        pump = new Pump
-        pump
-          .from buffer1
-          .start()
+      pump.buffer().writeAsync = sinon.spy (data) ->
+        data.should.equal "test"
+        do done
 
-        buffer1.once.calledOnce.should.be.true
-
-      it 'should write target buffer when write event is triggered', (done) ->
-        pump = new Pump
-
-        pump.buffer().writeAsync = sinon.spy (data) ->
-          data.should.equal "test"
-          done()
-
-        pump
-          .from buffer1
-          .start()
-
-        buffer1.writeEventCallback()
+      pump
+        .from buffer1
+        .start()
 
   it 'should seal output buffers when source buffer ends', ->
     source =
@@ -123,18 +120,14 @@ describe 'Pump', ->
   it 'should be able to transform the data', (done) ->
     buffer1 =
       content: [ 'foo', 'bar' ]
-      on: ->
-      isEmpty: ->
-        buffer1.content.length == 0
+      eventHandlers: {}
+      on: (event, cb) -> buffer1.eventHandlers[event] = cb
 
-      read: ->
-        result = buffer1.content.shift()
-
-      once: (event, cb) ->
-        event.should.equal 'write'
-        pump.buffer().write.getCall(0).args[0].should.equal 'foo!'
-        pump.buffer().write.getCall(1).args[0].should.equal 'bar!'
-        done()
+      readAsync: ->
+        result = Promise.resolve(buffer1.content.shift())
+        if buffer1.content.length == 0
+          do buffer1.eventHandlers.end
+        result
 
     pump = new Pump
     pump
@@ -143,5 +136,11 @@ describe 'Pump', ->
         @buffer().writeAsync data + '!'
 
     sinon.spy(pump.buffer(), 'write')
+    pump.on 'end', ->
+      pump.buffer().write.getCall(0).args[0].should.equal 'foo!'
+      pump.buffer().write.getCall(1).args[0].should.equal 'bar!'
+      done()
 
     pump.start()
+    pump.buffer().readAsync()
+      .then => pump.buffer().readAsync()

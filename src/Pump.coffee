@@ -37,6 +37,7 @@ class Pump extends EventEmitter
     @_buffers[name]
 
   start: ->
+    throw new Error 'Source is not configured' if !@_from
     @_state = Pump.STARTED if @_state == Pump.STOPPED
     do @_pump
     @
@@ -44,7 +45,7 @@ class Pump extends EventEmitter
   _pump: ->
     return do @subscribeForOutputBufferEnds if @_state == Pump.SOURCE_ENDED
 
-    @suckData()
+    @_from.readAsync()
       .then (data) => @_process data
       .done => do @_pump
 
@@ -57,17 +58,6 @@ class Pump extends EventEmitter
     for name, buffer of @_buffers
       return if !buffer.isEnded()
     @emit 'end'
-
-  suckData: ->
-    if !@_from
-      throw new Error 'Source is not configured'
-
-    if !@_from.isEmpty()
-      Promise.resolve(@_from.read())
-    else
-      new Promise (resolve, reject) =>
-        @_from.once 'write', =>
-          resolve(@_from.read())
 
   _process: (data) ->
     @buffer().writeAsync data
