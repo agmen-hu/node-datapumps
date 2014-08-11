@@ -63,14 +63,14 @@ class Pump extends EventEmitter
       throw new Error 'Source is not configured'
 
     if !@_from.isEmpty()
-      Promise.resolve(@_from.release())
+      Promise.resolve(@_from.read())
     else
       new Promise (resolve, reject) =>
-        @_from.once 'fill', =>
-          resolve(@_from.release())
+        @_from.once 'write', =>
+          resolve(@_from.read())
 
   _process: (data) ->
-    @buffer().fillAsync data
+    @buffer().writeAsync data
 
   process: (fn) ->
     throw new Error('Process must be a function') if typeof fn != 'function'

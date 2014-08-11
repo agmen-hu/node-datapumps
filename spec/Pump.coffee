@@ -11,21 +11,21 @@ describe 'Pump', ->
         isEmpty: ->
           buffer1.content.length == 0
 
-        release: ->
+        read: ->
           result = buffer1.content.shift()
 
         once: ->
           # we will arrive here after buffer1 is emptied
-          pump.buffer('output').fill.getCall(0).args[0].should.equal 'foo'
-          pump.buffer('output').fill.getCall(1).args[0].should.equal 'bar'
-          pump.buffer('output').fill.getCall(2).args[0].should.equal 'test'
-          pump.buffer('output').fill.getCall(3).args[0].should.equal 'content'
+          pump.buffer('output').write.getCall(0).args[0].should.equal 'foo'
+          pump.buffer('output').write.getCall(1).args[0].should.equal 'bar'
+          pump.buffer('output').write.getCall(2).args[0].should.equal 'test'
+          pump.buffer('output').write.getCall(3).args[0].should.equal 'content'
           done()
 
       pump = new Pump
       pump.from buffer1
 
-      sinon.spy(pump.buffer(), 'fill')
+      sinon.spy(pump.buffer(), 'write')
 
       pump.start()
 
@@ -62,11 +62,11 @@ describe 'Pump', ->
       buffer1 =
         on: ->
         isEmpty: -> true
-        release: -> 'test'
+        read: -> 'test'
 
-        once: sinon.spy (event, callback) -> buffer1.fillEventCallback = callback
+        once: sinon.spy (event, callback) -> buffer1.writeEventCallback = callback
 
-      it 'should wait for fill event on source buffer', ->
+      it 'should wait for write event on source buffer', ->
         pump = new Pump
         pump
           .from buffer1
@@ -74,10 +74,10 @@ describe 'Pump', ->
 
         buffer1.once.calledOnce.should.be.true
 
-      it 'should fill target buffer when fill event is triggered', (done) ->
+      it 'should write target buffer when write event is triggered', (done) ->
         pump = new Pump
 
-        pump.buffer().fillAsync = sinon.spy (data) ->
+        pump.buffer().writeAsync = sinon.spy (data) ->
           data.should.equal "test"
           done()
 
@@ -85,7 +85,7 @@ describe 'Pump', ->
           .from buffer1
           .start()
 
-        buffer1.fillEventCallback()
+        buffer1.writeEventCallback()
 
   it 'should seal output buffers when source buffer ends', ->
     source =
@@ -127,21 +127,21 @@ describe 'Pump', ->
       isEmpty: ->
         buffer1.content.length == 0
 
-      release: ->
+      read: ->
         result = buffer1.content.shift()
 
       once: (event, cb) ->
-        event.should.equal 'fill'
-        pump.buffer().fill.getCall(0).args[0].should.equal 'foo!'
-        pump.buffer().fill.getCall(1).args[0].should.equal 'bar!'
+        event.should.equal 'write'
+        pump.buffer().write.getCall(0).args[0].should.equal 'foo!'
+        pump.buffer().write.getCall(1).args[0].should.equal 'bar!'
         done()
 
     pump = new Pump
     pump
       .from buffer1
       .process (data) ->
-        @buffer().fillAsync data + '!'
+        @buffer().writeAsync data + '!'
 
-    sinon.spy(pump.buffer(), 'fill')
+    sinon.spy(pump.buffer(), 'write')
 
     pump.start()

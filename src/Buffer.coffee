@@ -23,11 +23,11 @@ class Buffer extends EventEmitter
   getContent: ->
     @content
 
-  fill: (data) ->
-    throw new Error('Cannot fill sealed buffer') if @_sealed == true
+  write: (data) ->
+    throw new Error('Cannot write sealed buffer') if @_sealed == true
     throw new Error('Buffer is full') if @isFull()
     @content.push data
-    @emit 'fill'
+    @emit 'write'
     @emit 'full' if @isFull()
 
     if @drain?
@@ -36,16 +36,16 @@ class Buffer extends EventEmitter
 
     @
 
-  fillAsync: (data) ->
+  writeAsync: (data) ->
     if !@isFull()
-      Promise.resolve(@fill(data))
+      Promise.resolve(@write(data))
     else
       new Promise (resolve, reject) =>
         @once 'release', =>
-          @fill(data)
+          @write(data)
           resolve()
 
-  release: ->
+  read: ->
     if @drain?
       throw new Error('Content is automatically released through the callback given in drain option')
 
