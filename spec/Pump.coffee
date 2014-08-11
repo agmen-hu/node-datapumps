@@ -144,3 +144,23 @@ describe 'Pump', ->
     pump.start()
     pump.buffer().readAsync()
       .then => pump.buffer().readAsync()
+
+  describe '#mixin()', ->
+    testMixin = (target) ->
+      target.foo = 'bar'
+
+    it 'should add mixins from array to the pump', ->
+      pump = new Pump
+
+      testMixin2 = (target) ->
+        target.foo2 = 'bar2'
+
+      pump.mixin [ testMixin, testMixin2 ]
+
+      pump.foo.should.equal 'bar'
+      pump.foo2.should.equal 'bar2'
+
+    it 'should be able to add a single mixin', ->
+      pump = new Pump
+      pump.mixin testMixin
+      pump.foo.should.equal 'bar'

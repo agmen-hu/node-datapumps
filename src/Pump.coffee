@@ -67,4 +67,8 @@ class Pump extends EventEmitter
     @_process = fn.bind @
     @
 
+  mixin: (mixins) ->
+    mixins = if Array.isArray mixins then mixins else [ mixins ]
+    mixin @ for mixin in mixins
+
 module.exports = Pump
