@@ -4,32 +4,32 @@ Pump = require('../src/Pump.coffee')
 
 describe 'Pump', ->
   describe '#start()', ->
-    it 'should pump content from source to output tank', (done) ->
-      tank1 =
+    it 'should pump content from source to output buffer', (done) ->
+      buffer1 =
         content: [ 'foo', 'bar', 'test', 'content' ]
         on: ->
         isEmpty: ->
-          tank1.content.length == 0
+          buffer1.content.length == 0
 
         release: ->
-          result = tank1.content.shift()
+          result = buffer1.content.shift()
 
         once: ->
-          # we will arrive here after tank1 is emptied
-          pump.tank('output').fill.getCall(0).args[0].should.equal 'foo'
-          pump.tank('output').fill.getCall(1).args[0].should.equal 'bar'
-          pump.tank('output').fill.getCall(2).args[0].should.equal 'test'
-          pump.tank('output').fill.getCall(3).args[0].should.equal 'content'
+          # we will arrive here after buffer1 is emptied
+          pump.buffer('output').fill.getCall(0).args[0].should.equal 'foo'
+          pump.buffer('output').fill.getCall(1).args[0].should.equal 'bar'
+          pump.buffer('output').fill.getCall(2).args[0].should.equal 'test'
+          pump.buffer('output').fill.getCall(3).args[0].should.equal 'content'
           done()
 
       pump = new Pump
-      pump.from tank1
+      pump.from buffer1
 
-      sinon.spy(pump.tank(), 'fill')
+      sinon.spy(pump.buffer(), 'fill')
 
       pump.start()
 
-    it 'should not be possible to change source tank after start', ->
+    it 'should not be possible to change source buffer after start', ->
       source =
         on: ->
         isEmpty: -> true
@@ -41,9 +41,9 @@ describe 'Pump', ->
           .from source
           .start()
           .from source
-      ).should.throw 'Cannot change source tank after pumping has been started'
+      ).should.throw 'Cannot change source buffer after pumping has been started'
 
-    it 'should not be possible to change output tank after start', ->
+    it 'should not be possible to change output buffer after start', ->
       source =
         on: ->
         isEmpty: -> true
@@ -54,40 +54,40 @@ describe 'Pump', ->
         pump
           .from source
           .start()
-          .tanks { output: source }
-      ).should.throw 'Cannot change output tanks after pumping has been started'
+          .buffers { output: source }
+      ).should.throw 'Cannot change output buffers after pumping has been started'
 
 
-    describe 'when source tank is empty', ->
-      tank1 =
+    describe 'when source buffer is empty', ->
+      buffer1 =
         on: ->
         isEmpty: -> true
         release: -> 'test'
 
-        once: sinon.spy (event, callback) -> tank1.fillEventCallback = callback
+        once: sinon.spy (event, callback) -> buffer1.fillEventCallback = callback
 
-      it 'should wait for fill event on source tank', ->
+      it 'should wait for fill event on source buffer', ->
         pump = new Pump
         pump
-          .from tank1
+          .from buffer1
           .start()
 
-        tank1.once.calledOnce.should.be.true
+        buffer1.once.calledOnce.should.be.true
 
-      it 'should fill target tank when fill event is triggered', (done) ->
+      it 'should fill target buffer when fill event is triggered', (done) ->
         pump = new Pump
 
-        pump.tank().fillAsync = sinon.spy (data) ->
+        pump.buffer().fillAsync = sinon.spy (data) ->
           data.should.equal "test"
           done()
 
         pump
-          .from tank1
+          .from buffer1
           .start()
 
-        tank1.fillEventCallback()
+        buffer1.fillEventCallback()
 
-  it 'should seal output tanks when source tank ends', ->
+  it 'should seal output buffers when source buffer ends', ->
     source =
       on: ->
       isEmpty: -> true
@@ -97,12 +97,12 @@ describe 'Pump', ->
     pump = new Pump
     pump.from source
 
-    sinon.spy pump.tank(), 'seal'
+    sinon.spy pump.buffer(), 'seal'
     do source.callbacks.end
     do pump.start
-    pump.tank().seal.calledOnce.should.be.true
+    pump.buffer().seal.calledOnce.should.be.true
 
-  it 'should emit end event when all output tanks ended', ->
+  it 'should emit end event when all output buffers ended', ->
     source =
       on: ->
       isEmpty: -> true
@@ -112,7 +112,7 @@ describe 'Pump', ->
     pump = new Pump
     pump.from source
 
-    sinon.spy pump.tank(), 'seal'
+    sinon.spy pump.buffer(), 'seal'
     endSpy = sinon.spy()
     pump.on 'end', endSpy
     do source.callbacks.end
@@ -121,27 +121,27 @@ describe 'Pump', ->
     endSpy.calledOnce.should.be.true
 
   it 'should be able to transform the data', (done) ->
-    tank1 =
+    buffer1 =
       content: [ 'foo', 'bar' ]
       on: ->
       isEmpty: ->
-        tank1.content.length == 0
+        buffer1.content.length == 0
 
       release: ->
-        result = tank1.content.shift()
+        result = buffer1.content.shift()
 
       once: (event, cb) ->
         event.should.equal 'fill'
-        pump.tank().fill.getCall(0).args[0].should.equal 'foo!'
-        pump.tank().fill.getCall(1).args[0].should.equal 'bar!'
+        pump.buffer().fill.getCall(0).args[0].should.equal 'foo!'
+        pump.buffer().fill.getCall(1).args[0].should.equal 'bar!'
         done()
 
     pump = new Pump
     pump
-      .from tank1
+      .from buffer1
       .process (data) ->
-        @tank().fillAsync data + '!'
+        @buffer().fillAsync data + '!'
 
-    sinon.spy(pump.tank(), 'fill')
+    sinon.spy(pump.buffer(), 'fill')
 
     pump.start()

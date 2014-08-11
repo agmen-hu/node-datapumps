@@ -1,8 +1,7 @@
 EventEmitter = require('events').EventEmitter
 Promise = require('bluebird')
-Pump = require('./Pump.coffee')
 
-class Tank extends EventEmitter
+class Buffer extends EventEmitter
   constructor: (options) ->
     @content = options?.content || []
     @size = options?.size || 10
@@ -10,7 +9,7 @@ class Tank extends EventEmitter
 
     if options?.drain
       if options.size
-        throw new Error 'Cannot specify size option for a tank with drain option'
+        throw new Error 'Cannot specify size option for a buffer with drain option'
 
       @size = 1
       @drain = if options?.drainPromisified then options.drain else Promise.promisify(options.drain)
@@ -25,8 +24,8 @@ class Tank extends EventEmitter
     @content
 
   fill: (data) ->
-    throw new Error('Cannot fill sealed tanks') if @_sealed == true
-    throw new Error('Tank is full') if @isFull()
+    throw new Error('Cannot fill sealed buffer') if @_sealed == true
+    throw new Error('Buffer is full') if @isFull()
     @content.push data
     @emit 'fill'
     @emit 'full' if @isFull()
@@ -53,7 +52,7 @@ class Tank extends EventEmitter
     do @_release
 
   _release: ->
-    throw new Error('Tank is empty') if @isEmpty()
+    throw new Error('Buffer is empty') if @isEmpty()
     result = @content.shift()
     @emit 'release'
     if @isEmpty()
@@ -62,7 +61,7 @@ class Tank extends EventEmitter
     result
 
   seal: ->
-    throw new Error('Tank already sealed') if @_sealed == true
+    throw new Error('Buffer already sealed') if @_sealed == true
     @_sealed = true
     @emit 'sealed'
     @emit 'end' if @isEmpty()
@@ -73,4 +72,4 @@ class Tank extends EventEmitter
   isEnded: ->
     @isSealed() && @isEmpty()
 
-module.exports = Tank
+module.exports = Buffer

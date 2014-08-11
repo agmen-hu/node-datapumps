@@ -1,6 +1,6 @@
 EventEmitter = require('events').EventEmitter
 Promise = require('bluebird')
-Tank = require('./Tank')
+Buffer = require('./Buffer')
 
 class Pump extends EventEmitter
   @STOPPED: 0
@@ -11,30 +11,30 @@ class Pump extends EventEmitter
   constructor: (options) ->
     @_state = Pump.STOPPED
     @_from = null
-    @tanks
-      output: new Tank
+    @buffers
+      output: new Buffer
 
-  from: (tank = null) ->
-    return @_from if tank == null
+  from: (buffer = null) ->
+    return @_from if buffer == null
     if @_state == Pump.STARTED
-      throw new Error 'Cannot change source tank after pumping has been started'
-    @_from = tank
+      throw new Error 'Cannot change source buffer after pumping has been started'
+    @_from = buffer
     @_from.on 'end', => do @sourceEnded
     @
 
   sourceEnded: ->
     @_state = Pump.SOURCE_ENDED
 
-  tanks: (tanks = null) ->
-    return @_tanks if tanks == null
+  buffers: (buffers = null) ->
+    return @_buffers if buffers == null
     if @_state == Pump.STARTED
-      throw new Error 'Cannot change output tanks after pumping has been started'
-    @_tanks = tanks
+      throw new Error 'Cannot change output buffers after pumping has been started'
+    @_buffers = buffers
     @
 
-  tank: (name = 'output') ->
-    throw new Error("No such tank: #{name}") if !@_tanks[name]
-    @_tanks[name]
+  buffer: (name = 'output') ->
+    throw new Error("No such buffer: #{name}") if !@_buffers[name]
+    @_buffers[name]
 
   start: ->
     @_state = Pump.STARTED if @_state == Pump.STOPPED
@@ -42,20 +42,20 @@ class Pump extends EventEmitter
     @
 
   _pump: ->
-    return do @subscribeForOutputTankEnds if @_state == Pump.SOURCE_ENDED
+    return do @subscribeForOutputBufferEnds if @_state == Pump.SOURCE_ENDED
 
     @suckData()
       .then (data) => @_process data
       .done => do @_pump
 
-  subscribeForOutputTankEnds: ->
-    for name, tank of @_tanks
-      tank.on 'end', @outputTankEnded.bind @
-      do tank.seal
+  subscribeForOutputBufferEnds: ->
+    for name, buffer of @_buffers
+      buffer.on 'end', @outputBufferEnded.bind @
+      do buffer.seal
 
-  outputTankEnded: ->
-    for name, tank of @_tanks
-      return if !tank.isEnded()
+  outputBufferEnded: ->
+    for name, buffer of @_buffers
+      return if !buffer.isEnded()
     @emit 'end'
 
   suckData: ->
@@ -70,7 +70,7 @@ class Pump extends EventEmitter
           resolve(@_from.release())
 
   _process: (data) ->
-    @tank().fillAsync data
+    @buffer().fillAsync data
 
   process: (fn) ->
     throw new Error('Process must be a function') if typeof fn != 'function'
