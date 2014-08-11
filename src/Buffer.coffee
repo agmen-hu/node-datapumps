@@ -7,13 +7,6 @@ class Buffer extends EventEmitter
     @size = options?.size || 10
     @_sealed = false
 
-    if options?.drain
-      if options.size
-        throw new Error 'Cannot specify size option for a buffer with drain option'
-
-      @size = 1
-      @drain = if options?.drainPromisified then options.drain else Promise.promisify(options.drain)
-
   isEmpty: ->
     @content.length == 0
 
@@ -29,11 +22,6 @@ class Buffer extends EventEmitter
     @content.push data
     @emit 'write'
     @emit 'full' if @isFull()
-
-    if @drain?
-        @drain(@content[0])
-          .then => do @_release
-
     @
 
   writeAsync: (data) ->
@@ -46,12 +34,6 @@ class Buffer extends EventEmitter
           resolve()
 
   read: ->
-    if @drain?
-      throw new Error('Content is automatically released through the callback given in drain option')
-
-    do @_release
-
-  _release: ->
     throw new Error('Buffer is empty') if @isEmpty()
     result = @content.shift()
     @emit 'release'

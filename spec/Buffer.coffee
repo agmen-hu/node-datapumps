@@ -84,33 +84,6 @@ describe 'Buffer', ->
           result.should.equal 'test'
           do done
 
-  describe 'having a drain option', ->
-    it 'should not have size option specified', ->
-      ( ->
-        new Buffer
-          drain: (data, cb) ->
-          size: 5
-      ).should.throw 'Cannot specify size option for a buffer with drain option'
-
-    it 'should not be able to read data manually', ->
-      buffer = new Buffer
-        drain: (data, cb) ->
-          do cb
-
-      ( ->
-        do buffer.read
-      ).should.throw 'Content is automatically released through the callback given in drain option'
-
-    it 'should read any writeed item using the promisifiable drain function', (done) ->
-      buffer = new Buffer
-        drain: (data, cb) ->
-          do cb
-
-      buffer.on 'empty', ->
-        do done
-
-      buffer.write 'test'
-
   describe 'that is sealed', ->
     it 'should throw error when trying to write it', ->
       buffer = new Buffer
