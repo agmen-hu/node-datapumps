@@ -18,11 +18,27 @@ class Pump extends EventEmitter
     return @_from if buffer == null
     if @_state == Pump.STARTED
       throw new Error 'Cannot change source buffer after pumping has been started'
-    @_from = buffer
+    if buffer instanceof Buffer
+      @_from = buffer
+    else
+      @_from = new Buffer
+        size: 1000
+      buffer.on 'data', (data) => @_from.write data
+      buffer.on 'end', => @_from.seal()
+      @_from.on 'full', -> buffer.pause()
+      @_from.on 'release', -> buffer.resume()
+
     @_from.on 'end', => do @sourceEnded
+
+    @bufferEndedWhileWaitingForRead = new Promise ->
+    @bufferEndedWhileWaitingForRead
+      .cancellable()
+      .catch(Promise.CancellationError, ->)
+
     @
 
   sourceEnded: ->
+    @bufferEndedWhileWaitingForRead.cancel()
     @_state = Pump.SOURCE_ENDED
 
   buffers: (buffers = null) ->
@@ -45,8 +61,12 @@ class Pump extends EventEmitter
   _pump: ->
     return do @subscribeForOutputBufferEnds if @_state == Pump.SOURCE_ENDED
 
-    @_from.readAsync()
+    Promise.race([
+      @_from.readAsync()
+      @bufferEndedWhileWaitingForRead
+    ])
       .then (data) => @_process data
+      .catch(Promise.CancellationError, ->)
       .done => do @_pump
 
   subscribeForOutputBufferEnds: ->
@@ -70,5 +90,6 @@ class Pump extends EventEmitter
   mixin: (mixins) ->
     mixins = if Array.isArray mixins then mixins else [ mixins ]
     mixin @ for mixin in mixins
+    @
 
 module.exports = Pump

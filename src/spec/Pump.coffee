@@ -1,24 +1,19 @@
 require('should')
 sinon = require('sinon')
 Promise = require('bluebird')
+Buffer = require('../Buffer')
 Pump = require('../Pump')
 
 describe 'Pump', ->
   describe '#start()', ->
     it 'should pump content from source to output buffer', (done) ->
-      buffer1 =
+      buffer = new Buffer
         content: [ 'foo', 'bar', 'test', 'content' ]
-        eventHandlers: {}
-        on: (event, cb) -> buffer1.eventHandlers[event] = cb
 
-        readAsync: ->
-          result = Promise.resolve(buffer1.content.shift())
-          if buffer1.content.length == 0
-            do buffer1.eventHandlers.end
-          result
+      buffer.seal()
 
       pump = new Pump
-      pump.from buffer1
+      pump.from buffer
 
       sinon.spy(pump.buffer(), 'write')
 
@@ -67,12 +62,8 @@ describe 'Pump', ->
 
 
     it 'should write target buffer when source is readable', (done) ->
-      buffer1 =
-        on: ->
-        isEmpty: -> true
-        once: ->
-        size: 1
-        readAsync: -> if buffer1.size-- then Promise.resolve('test') else new Promise ->
+      buffer1 = new Buffer
+        content: [ 'test' ]
 
       pump = new Pump
 
@@ -118,33 +109,25 @@ describe 'Pump', ->
     endSpy.calledOnce.should.be.true
 
   it 'should be able to transform the data', (done) ->
-    buffer1 =
+    buffer = new Buffer
       content: [ 'foo', 'bar' ]
-      eventHandlers: {}
-      on: (event, cb) -> buffer1.eventHandlers[event] = cb
-
-      readAsync: ->
-        result = Promise.resolve(buffer1.content.shift())
-        if buffer1.content.length == 0
-          do buffer1.eventHandlers.end
-        result
 
     pump = new Pump
     pump
-      .from buffer1
+      .from buffer
       .process (data) ->
         @buffer().writeAsync data + '!'
 
     sinon.spy(pump.buffer(), 'write')
     pump.on 'end', ->
-      console.log "ITT"
       pump.buffer().write.getCall(0).args[0].should.equal 'foo!'
       pump.buffer().write.getCall(1).args[0].should.equal 'bar!'
       done()
 
+    buffer.seal()
     pump.start()
     pump.buffer().readAsync()
-      .then => pump.buffer().readAsync()
+      .then -> pump.buffer().readAsync()
 
   describe '#mixin()', ->
     testMixin = (target) ->
