@@ -30,15 +30,10 @@ class Pump extends EventEmitter
 
     @_from.on 'end', => do @sourceEnded
 
-    @bufferEndedWhileWaitingForRead = new Promise ->
-    @bufferEndedWhileWaitingForRead
-      .cancellable()
-      .catch(Promise.CancellationError, ->)
-
     @
 
   sourceEnded: ->
-    @bufferEndedWhileWaitingForRead.cancel()
+    @currentRead.cancel() if @currentRead
     @_state = Pump.SOURCE_ENDED
 
   buffers: (buffers = null) ->
@@ -61,11 +56,11 @@ class Pump extends EventEmitter
   _pump: ->
     return do @subscribeForOutputBufferEnds if @_state == Pump.SOURCE_ENDED
 
-    Promise.race([
-      @_from.readAsync()
-      @bufferEndedWhileWaitingForRead
-    ])
-      .then (data) => @_process data
+    (@currentRead = @_from.readAsync())
+      .cancellable()
+      .then (data) =>
+        @currentRead = null
+        @_process data
       .catch(Promise.CancellationError, ->)
       .done => do @_pump
 
