@@ -1,7 +1,7 @@
 require('should')
 sinon = require('sinon')
 Promise = require('bluebird')
-Pump = require('../src/Pump.coffee')
+Pump = require('../Pump')
 
 describe 'Pump', ->
   describe '#start()', ->
@@ -137,6 +137,7 @@ describe 'Pump', ->
 
     sinon.spy(pump.buffer(), 'write')
     pump.on 'end', ->
+      console.log "ITT"
       pump.buffer().write.getCall(0).args[0].should.equal 'foo!'
       pump.buffer().write.getCall(1).args[0].should.equal 'bar!'
       done()

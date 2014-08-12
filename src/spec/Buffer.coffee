@@ -1,7 +1,7 @@
 require('should')
 Promise = require('bluebird')
 sinon = require('sinon')
-Buffer = require('../src/Buffer')
+Buffer = require('../Buffer')
 
 describe 'Buffer', ->
   it 'should be empty when created', ->
