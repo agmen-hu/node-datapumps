@@ -49,7 +49,6 @@
 #
 # Based on excel4node (https://github.com/natergj/excel4node).
 #
-Promise = require('bluebird')
 excel4node = require('excel4node')
 
 ExcelWriterMixin = (onMixin) ->
@@ -96,7 +95,6 @@ ExcelWriterMixin = (onMixin) ->
       throw new Error 'Use createWorksheet before writing rows' if !@_excel.worksheet?
       @_excel.worksheet.Cell(@_excel.currentRow, index + 1).String(value) for value, index in columns
       @_excel.currentRow++
-      Promise.resolve()
 
     # Write the xlsx file when pumping is ended.
     target.on 'end', ->
