@@ -1,11 +1,37 @@
 {
   "name": "node-datapumps",
+  "description": "Node.js ETL (Extract, Transform, Load) toolkit for easy data import, export or transfer between systems.",
+  "licence": "MIT",
+  "author": {
+    "name": "Szilard Novaki",
+    "email": "novaki@agmen.hu",
+    "url": "https://github.com/novaki"
+  },
+  "homepage": "https://github.com/agmen-hu/node-datapumps",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/agmen-hu/node-datapumps"
+  },
+  "bugs": {
+    "url": "https://github.com/agmen-hu/node-datapumps/issues"
+  },
   "version": "0.1.0",
   "dependencies": {
     "bluebird": "^2.2.2",
-    "coffee-script": "^1.7.1"
+    "coffee-script": "^1.7.1",
+    "fast-csv": "~0.4.2",
+    "excel4node": "~0.0.9",
+    "mysql": "~2.4.2"
+  },
+  "devDependencies": {
+    "grunt": "~0.4.1",
+    "grunt-cafe-mocha": "~0.1.12",
+    "grunt-contrib-coffee": "~0.10.1",
+    "grunt-contrib-watch": "~0.3.1",
+    "mocha": "~1.21.3",
+    "should": "~4.0.4"
   },
   "scripts": {
-    "test": "mocha --compilers coffee:coffee-script/register spec/"
+    "test": "mocha --compilers coffee:coffee-script/register src/spec src/mixin/spec"
   }
 }
