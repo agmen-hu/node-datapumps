@@ -25,7 +25,7 @@ class Group extends EventEmitter
       end = false if !pump.isEnded()
     return if !end
 
-    @_state = Pump.ENDED
+    @_state = Group.ENDED
     @emit 'end'
 
   pump: (name) ->
@@ -39,7 +39,7 @@ class Group extends EventEmitter
     @
 
   isEnded: ->
-    @_state == Pump.ENDED
+    @_state == Group.ENDED
 
   whenFinished: ->
     return new Promise (resolve) =>
