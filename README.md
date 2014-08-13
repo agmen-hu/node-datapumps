@@ -32,10 +32,10 @@ Create a group of pumps to import, export, transform or transfer data.
    ```
    `.from` indicates that the pump will load data from the buffer of *customers* pump. The
    `CsvWriterMixin` extends the functionality of the pump, it creates csv file with given
-   headers and adds the `.writeRow` method to the pump. Finally, the default `.process` method
-   (which copies data to the output buffer) is overridden with writing rows to the csv.
+   headers and adds the `.writeRow` method to the pump. Finally, the `.process` method
+   (which copies data to the output buffer by default) is overridden with writing rows to the csv.
 
- * Register a listener for *end* event and start the pump:
+ * Register a listener for `end` event and `.start()` the pump:
    ```js
    exporter
      .on('end', function() {
