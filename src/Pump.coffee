@@ -91,4 +91,7 @@ class Pump extends EventEmitter
   isEnded: ->
     @_state == Pump.ENDED
 
+  createBuffer: (options = {}) ->
+    new Buffer options
+
 module.exports = Pump
