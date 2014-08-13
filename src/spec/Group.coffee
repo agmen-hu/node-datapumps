@@ -86,3 +86,27 @@ describe 'Group', ->
 
       group.expose('foo', 'test')
       group.buffer('foo').should.equal group.pump('test').buffer('output')
+
+  describe '#setInputPump(pumpName)', ->
+    it 'should throw error when nonexistent name is set', ->
+      group = new Group
+      ( ->
+        group.setInputPump 'test'
+      ).should.throw 'Pump test does not exist'
+
+  describe '#from(buffer)', ->
+    it 'should call .from on pump configured in .setInputPump', ->
+      group = new Group
+      group.addPump 'test'
+      group.setInputPump 'test'
+      buffer = new Buffer
+      sinon.spy group.pump('test'), 'from'
+      group.from buffer
+      group.pump('test').from.calledOnce.should.be.true
+      group.pump('test').from.getCall(0).args[0].should.equal buffer
+
+    it 'should throw error when input pump is not configured', ->
+      group = new Group
+      ( ->
+        group.from 'foo'
+      ).should.throw 'Input pump is not set, use .setInputPump to set it'

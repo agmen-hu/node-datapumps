@@ -60,7 +60,18 @@ class Group extends EventEmitter
     @pump(pumpName).buffer(bufferName ? 'output')
 
   buffer: (name = 'output') ->
-    throw new Error("No such buffer: #{name}") if !@_exposedBuffers[name]
+    throw new Error "No such buffer: #{name}" if !@_exposedBuffers[name]
     @_exposedBuffers[name]
+
+  setInputPump: (pumpName) ->
+    @_inputPump = @pump(pumpName)
+
+  from: (buffer = null) ->
+    throw new Error 'Input pump is not set, use .setInputPump to set it' if !@_inputPump?
+    @_inputPump.from buffer
+    @
+
+  process: ->
+    throw new Error 'Cannot call .process() on a group: data in a group is transformed by its pumps.'
 
 module.exports = Group
