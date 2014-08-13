@@ -107,6 +107,7 @@ describe 'Pump', ->
     do pump.start
 
     endSpy.calledOnce.should.be.true
+    pump.isEnded().should.be.true
 
   it 'should be able to transform the data', (done) ->
     buffer = new Buffer

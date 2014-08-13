@@ -72,6 +72,7 @@ class Pump extends EventEmitter
   outputBufferEnded: ->
     for name, buffer of @_buffers
       return if !buffer.isEnded()
+    @_state = Pump.ENDED
     @emit 'end'
 
   _process: (data) ->
@@ -86,5 +87,8 @@ class Pump extends EventEmitter
     mixins = if Array.isArray mixins then mixins else [ mixins ]
     mixin @ for mixin in mixins
     @
+
+  isEnded: ->
+    @_state == Pump.ENDED
 
 module.exports = Pump
