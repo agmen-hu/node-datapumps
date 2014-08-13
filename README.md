@@ -22,7 +22,7 @@ Create a group of pumps to import, export, transform or transfer data.
    ```js
    exporter.addPump('csvWriter')
      .from(exporter.pump('customers').buffer())
-     .mixin(datapump.mixin.CsvWriterMixin({
+     .mixin(datapumps.mixin.CsvWriterMixin({
        path: 'test.csv',
        headers: [ 'Id', 'First Name', 'Last Name' ]
      }))
