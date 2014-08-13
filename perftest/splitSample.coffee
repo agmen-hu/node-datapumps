@@ -14,7 +14,7 @@ mysqlConnection = require('mysql').createConnection
   user: 'root'
   database: 'testdb'
 
-exporter = group();
+exporter = group()
 
 exporter.addPump('customers')
   .from mysqlConnection.query('SELECT * FROM customer LIMIT 10000').stream {highWaterMark: 5}
