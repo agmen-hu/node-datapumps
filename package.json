@@ -1,5 +1,5 @@
 {
-  "name": "node-datapumps",
+  "name": "datapumps",
   "description": "Node.js ETL (Extract, Transform, Load) toolkit for easy data import, export or transfer between systems.",
   "licence": "MIT",
   "author": {
