@@ -4,15 +4,15 @@
 Create a group of pumps to import, export, transform or transfer data.
 
 ## Usage example: csv export from mysql
- * Create a group of pumps:
+ * Create a group:
    ```js
    var datapumps = require('datapumps');
-   var exportProcess = datapumps.group();
+   var exporter = datapumps.group();
    ```
 
  * Create a pump that loads the data from mysql:
    ```js
-   exportProcess.addPump('customers')
+   exporter.addPump('customers')
      .from(mysqlConnection.query('SELECT id,last_name,first_name FROM customer').stream({highWaterMark: 5}));
    ```
    This pump will read the query results into a buffer. The pump controls the data flow, i.e.
@@ -20,8 +20,8 @@ Create a group of pumps to import, export, transform or transfer data.
 
  * Create a pump that writes the data to csv:
    ```js
-   exportProcess.addPump('csvWriter')
-     .from(exportProcess.pump('customers').buffer())
+   exporter.addPump('csvWriter')
+     .from(exporter.pump('customers').buffer())
      .mixin(datapump.mixin.CsvWriterMixin({
        path: 'test.csv',
        headers: [ 'Id', 'First Name', 'Last Name' ]
@@ -37,7 +37,7 @@ Create a group of pumps to import, export, transform or transfer data.
 
  * Register a listener for *end* event and start the pump:
    ```js
-   exportProcess
+   exporter
      .on('end', function() {
        console.log('CSV export complete.');
      })
