@@ -10,6 +10,7 @@ class Group extends EventEmitter
 
   constructor: ->
     @_pumps = {}
+    @_exposedBuffers = {}
     @_state = Group.STOPPED
 
   addPump: (name, pump = null) ->
@@ -47,5 +48,19 @@ class Group extends EventEmitter
 
   createBuffer: (options = {}) ->
     new Buffer options
+
+  expose: (exposedName, bufferPath) ->
+    throw new Error 'Already exposed a buffer with that name' if @_exposedBuffers[exposedName]?
+    @_exposedBuffers[exposedName] = @_getBufferByPath(bufferPath)
+
+  _getBufferByPath: (bufferPath) ->
+    items = bufferPath.split('/')
+    throw new Error 'bufferPath format must be <pumpName>/<bufferName>' if items.length > 2
+    [ pumpName, bufferName ] = items
+    @pump(pumpName).buffer(bufferName ? 'output')
+
+  buffer: (name = 'output') ->
+    throw new Error("No such buffer: #{name}") if !@_exposedBuffers[name]
+    @_exposedBuffers[name]
 
 module.exports = Group

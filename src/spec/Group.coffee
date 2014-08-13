@@ -71,3 +71,18 @@ describe 'Group', ->
 
       group.start()
       source.seal()
+
+  describe '#expose(exposedName, bufferPath)', ->
+    it 'should expose a buffer of a pump as its own buffer', ->
+      group = new Group
+      group.addPump 'test'
+
+      group.expose('foo', 'test/output')
+      group.buffer('foo').should.equal group.pump('test').buffer('output')
+
+    it 'should expose the default buffer of pump if not given in path', ->
+      group = new Group
+      group.addPump 'test'
+
+      group.expose('foo', 'test')
+      group.buffer('foo').should.equal group.pump('test').buffer('output')
