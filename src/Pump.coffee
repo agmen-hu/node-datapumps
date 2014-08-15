@@ -20,13 +20,15 @@ class Pump extends EventEmitter
       throw new Error 'Cannot change source buffer after pumping has been started'
     if buffer instanceof Buffer
       @_from = buffer
-    else
+    else if buffer instanceof require('stream').Readable
       @_from = new Buffer
         size: 1000
       buffer.on 'data', (data) => @_from.write data
       buffer.on 'end', => @_from.seal()
       @_from.on 'full', -> buffer.pause()
       @_from.on 'release', -> buffer.resume()
+    else
+      throw new Error 'Argument must be datapumps.Buffer or stream.Readable'
 
     @_from.on 'end', => do @sourceEnded
 

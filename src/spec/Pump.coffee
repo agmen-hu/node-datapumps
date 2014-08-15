@@ -31,11 +31,8 @@ describe 'Pump', ->
         .then => pump.buffer().readAsync()
 
     it 'should not be possible to change source buffer after start', ->
-      source =
-        on: ->
-        isEmpty: -> true
-        once: ->
-        readAsync: -> Promise.resolve()
+      source = new Buffer
+      source.readAsync = -> Promise.resolve()
 
       pump = new Pump
       ( ->
@@ -46,11 +43,8 @@ describe 'Pump', ->
       ).should.throw 'Cannot change source buffer after pumping has been started'
 
     it 'should not be possible to change output buffer after start', ->
-      source =
-        on: ->
-        isEmpty: -> true
-        once: ->
-        readAsync: -> Promise.resolve()
+      source = new Buffer
+      source.readAsync = -> Promise.resolve()
 
       pump = new Pump
       ( ->
@@ -76,11 +70,9 @@ describe 'Pump', ->
         .start()
 
   it 'should seal output buffers when source buffer ends', ->
-    source =
-      on: ->
-      isEmpty: -> true
-      callbacks: {}
-      on: sinon.spy (event, callback) -> source.callbacks[event] = callback
+    source = new Buffer
+    source.callbacks = {}
+    source.on = sinon.spy (event, callback) -> source.callbacks[event] = callback
 
     pump = new Pump
     pump.from source
@@ -91,11 +83,9 @@ describe 'Pump', ->
     pump.buffer().seal.calledOnce.should.be.true
 
   it 'should emit end event when all output buffers ended', ->
-    source =
-      on: ->
-      isEmpty: -> true
-      callbacks: {}
-      on: sinon.spy (event, callback) -> source.callbacks[event] = callback
+    source = new Buffer
+    source.callbacks = {}
+    source.on = sinon.spy (event, callback) -> source.callbacks[event] = callback
 
     pump = new Pump
     pump.from source
@@ -149,3 +139,10 @@ describe 'Pump', ->
       pump = new Pump
       pump.mixin testMixin
       pump.foo.should.equal 'bar'
+
+  describe '#from()', ->
+    it 'should throw error when argument is not a buffer or stream', ->
+      pump = new Pump
+      ( ->
+        pump.from('test')
+      ).should.throw 'Argument must be datapumps.Buffer or stream.Readable'
