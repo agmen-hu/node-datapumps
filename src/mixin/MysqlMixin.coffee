@@ -4,7 +4,7 @@ mysqlMixin = (connection) ->
   (target) ->
     target._mysql =
       connection: connection
-      query: Promise.promisify connection.query
+      query: Promise.promisify connection.query, connection
 
     target.query = (query, args...) ->
       if args?
