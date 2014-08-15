@@ -57,7 +57,8 @@ A pump reads data from its input and copies it to the output buffer by default:
 To access the output buffer, use the `.buffer()` method, which returns a Buffer instance:
 ```js
 buffer = pump.buffer('output');
-buffer = pump.buffer(); # equivalent with previous as the default buffer of the pump is called 'output'
+buffer = pump.buffer(); // equivalent with previous as the default buffer
+                        // of the pump is called 'output'
 ```
 
 Use the `.buffers()` method when you need multiple buffers:
