@@ -1,4 +1,5 @@
 # Datapumps: Simple ETL for node.js
+[![Travis CI Badge](https://api.travis-ci.org/agmen-hu/node-datapumps.svg?branch=master)](https://travis-ci.org/agmen-hu/node-datapumps "Travis CI")
 
 ## Overview
 Create a group of pumps to import, export, transform or transfer data.
@@ -78,7 +79,7 @@ Note that the *tickets* pump has two output buffers: *openTickets* and *closedTi
 reads data from the *openTickets* buffer of the *tickets* pump.
 
 ### Transforming data
-Use the `.process()` method to set the function which processes a data:
+Use the `.process()` method to set the function which processes data:
 ```js
 ticketsPump
   .process(function(ticket) {
@@ -132,7 +133,7 @@ class Notifier extends Group
   constructor: ->
     super()
     @addPump 'emailLookup'
-      .mixin(MysqlMixin(connection))
+      .mixin MysqlMixin connection
       .process (data) ->
         @query('SELECT email FROM user where username = ?', [ data.username ])
           .then (result) =>
