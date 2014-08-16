@@ -52,8 +52,7 @@ class Pump extends EventEmitter
   start: ->
     throw new Error 'Source is not configured' if !@_from
     @_state = Pump.STARTED if @_state == Pump.STOPPED
-    if !@_errorBuffer?
-      @_errorBuffer = new Buffer
+    @_errorBuffer = new Buffer if !@_errorBuffer?
     do @_pump
     @
 
