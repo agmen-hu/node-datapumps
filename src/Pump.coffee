@@ -52,6 +52,8 @@ class Pump extends EventEmitter
   start: ->
     throw new Error 'Source is not configured' if !@_from
     @_state = Pump.STARTED if @_state == Pump.STOPPED
+    if !@_errorBuffer?
+      @_errorBuffer = new Buffer
     do @_pump
     @
 
@@ -64,6 +66,8 @@ class Pump extends EventEmitter
         @currentRead = null
         @_process data
       .catch(Promise.CancellationError, ->)
+      .catch (err) =>
+        @_errorBuffer.write err
       .done => do @_pump
 
   subscribeForOutputBufferEnds: ->
@@ -95,5 +99,9 @@ class Pump extends EventEmitter
 
   createBuffer: (options = {}) ->
     new Buffer options
+
+  errorBuffer: (buffer = null) ->
+    return @_errorBuffer if buffer == null
+    @_errorBuffer = buffer
 
 module.exports = Pump

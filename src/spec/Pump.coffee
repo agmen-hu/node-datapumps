@@ -69,6 +69,32 @@ describe 'Pump', ->
         .from buffer1
         .start()
 
+    it 'should create error buffer on start if not set', ->
+      pump = new Pump
+      pump.from new Buffer
+      pump.start()
+      pump.errorBuffer().should.not.be.null
+
+    it 'should write errors to the error buffer', (done) ->
+      pump = new Pump
+      pump.from new Buffer
+      errorBuffer = new Buffer
+      pump.errorBuffer errorBuffer
+      pump
+        .process ->
+          Promise.reject('test')
+
+      pump.from()
+        .write 'testData'
+        .seal()
+
+      pump
+        .on 'end', ->
+          pump.errorBuffer().getContent().length.should.equal(1)
+          pump.errorBuffer().getContent()[0].should.equal('test')
+          done()
+        .start()
+
   it 'should seal output buffers when source buffer ends', ->
     source = new Buffer
     source.callbacks = {}
