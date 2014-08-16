@@ -121,3 +121,14 @@ describe 'Group', ->
       ( ->
         group.from 'foo'
       ).should.throw 'Input pump is not set, use .setInputPump to set it'
+
+  it 'should emit error event when errorBuffer is full', (done) ->
+    group = new Group
+
+    buffer = new Buffer
+      size: 1
+    group.errorBuffer buffer
+
+    group.on 'error', ->
+      done()
+    buffer.write 'test'

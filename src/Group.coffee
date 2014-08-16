@@ -79,5 +79,7 @@ class Group extends EventEmitter
   errorBuffer: (buffer = null) ->
     return @_errorBuffer if buffer == null
     @_errorBuffer = buffer
+    @_errorBuffer.on 'full', =>
+      @emit 'error'
 
 module.exports = Group
