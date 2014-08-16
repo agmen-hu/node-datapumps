@@ -50,7 +50,7 @@ class Group extends EventEmitter
     new Buffer options
 
   expose: (exposedName, bufferPath) ->
-    throw new Error 'Already exposed a buffer with that name' if @_exposedBuffers[exposedName]?
+    throw new Error "Already exposed a buffer with name #{exposedName}" if @_exposedBuffers[exposedName]?
     @_exposedBuffers[exposedName] = @_getBufferByPath(bufferPath)
 
   _getBufferByPath: (bufferPath) ->
