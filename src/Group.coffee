@@ -35,6 +35,8 @@ class Group extends EventEmitter
   start: ->
     throw new Error 'Group already started' if @_state != Group.STOPPED
     @_state = Group.STARTED
+    @_errorBuffer = new Buffer if !@_errorBuffer?
+    pump.errorBuffer @_errorBuffer for name, pump of @_pumps
     do pump.start for name, pump of @_pumps
     @
 
@@ -73,5 +75,9 @@ class Group extends EventEmitter
 
   process: ->
     throw new Error 'Cannot call .process() on a group: data in a group is transformed by its pumps.'
+
+  errorBuffer: (buffer = null) ->
+    return @_errorBuffer if buffer == null
+    @_errorBuffer = buffer
 
 module.exports = Group

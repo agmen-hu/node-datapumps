@@ -43,6 +43,17 @@ describe 'Group', ->
       group.pump('foo').start.calledOnce.should.be.true
       group.pump('bar').start.calledOnce.should.be.true
 
+    it 'should set error buffer for all pumps', ->
+      group = new Group
+      group.addPump 'foo'
+        .from new Buffer
+      group.addPump 'bar'
+        .from group.pump('foo').buffer()
+
+      group.start()
+      group.errorBuffer().should.equal group.pump('foo').errorBuffer()
+      group.errorBuffer().should.equal group.pump('bar').errorBuffer()
+
   it 'should emit end event when all pumps ended', (done) ->
     group = new Group
     source = new Buffer
