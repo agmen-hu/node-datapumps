@@ -112,6 +112,7 @@ class Pump extends EventEmitter
     @
 
   pause: ->
+    return if @_state == Pump.PAUSED
     throw new Error 'Cannot .pause() a pump that is not running' if @_state != Pump.STARTED
     @_state = Pump.PAUSED
     @

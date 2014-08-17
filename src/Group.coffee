@@ -88,6 +88,7 @@ class Group extends EventEmitter
     @
 
   pause: ->
+    return if @_state == Group.PAUSED
     throw new Error 'Cannot .pause() a group that is not pumping' if @_state != Group.STARTED
     @_state = Group.PAUSED
     do pump.pause for name, pump of @_pumps
