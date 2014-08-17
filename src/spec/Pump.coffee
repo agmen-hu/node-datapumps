@@ -172,3 +172,31 @@ describe 'Pump', ->
       ( ->
         pump.from('test')
       ).should.throw 'Argument must be datapumps.Buffer or stream.Readable'
+
+  describe '#pause()', ->
+    it 'should pause the pump', (done) ->
+      pump = new Pump
+      pump.from new Buffer
+
+      pump.from().write 'test'
+      pump.from().write 'test'
+      pump.buffer().on 'write', ->
+        pump.pause()
+      pump.start()
+      setTimeout ->
+        pump.from().getContent().length.should.equal 1
+        pump._state.should.equal = Pump.PAUSED
+        done()
+      , 10
+
+  describe '#resume()', ->
+    it 'should resume the pump when its paused', ->
+      pump = new Pump
+      pump.from new Buffer
+
+      pump.start()
+      pump.pause()
+      sinon.spy pump, '_pump'
+
+      pump.resume()
+      pump._pump.calledOnce.should.be.true

@@ -111,4 +111,15 @@ class Pump extends EventEmitter
     @_errorBuffer = buffer
     @
 
+  pause: ->
+    throw new Error 'Cannot .pause() a pump that is not running' if @_state != Pump.STARTED
+    @_state = Pump.PAUSED
+    @
+
+  resume: ->
+    throw new Error 'Cannot .resume() a pump that is not paused' if @_state != Pump.PAUSED
+    @_state = Pump.STARTED if @_state == Pump.PAUSED
+    do @_pump
+    @
+
 module.exports = Pump
