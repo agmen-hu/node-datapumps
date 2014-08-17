@@ -127,7 +127,9 @@ describe 'Group', ->
 
     buffer = new Buffer
       size: 1
-    group.errorBuffer buffer
+    group
+      .errorBuffer buffer
+      .start()
 
     group.on 'error', ->
       done()

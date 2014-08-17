@@ -6,7 +6,8 @@ Buffer = require('./Buffer')
 class Group extends EventEmitter
   @STOPPED: 0
   @STARTED: 1
-  @ENDED: 2
+  @PAUSED: 2
+  @ENDED: 3
 
   constructor: ->
     @_pumps = {}
@@ -82,6 +83,20 @@ class Group extends EventEmitter
     return @_errorBuffer if buffer == null
     @_errorBuffer = buffer
     @_errorBuffer.on 'full', =>
+      do @pause
       @emit 'error'
+    @
+
+  pause: ->
+    throw new Error 'Cannot .pause() a group that is not pumping' if @_state != Group.STARTED
+    @_state = Group.PAUSED
+    do pump.pause for name, pump of @_pumps
+    @
+
+  resume: ->
+    throw new Error 'Cannot .resume() a group that is not paused' if @_state != Group.PAUSED
+    @_state = Group.STARTED
+    do pump.resume for name, pump of @_pumps
+    @
 
 module.exports = Group
