@@ -118,7 +118,7 @@ class Pump extends EventEmitter
 
   resume: ->
     throw new Error 'Cannot .resume() a pump that is not paused' if @_state != Pump.PAUSED
-    @_state = Pump.STARTED if @_state == Pump.PAUSED
+    @_state = Pump.STARTED
     do @_pump
     @
 
