@@ -5,7 +5,7 @@ Buffer = require('./Buffer')
 class Pump extends EventEmitter
   @STOPPED: 0
   @STARTED: 1
-  @SOURCE_ENDED: 2
+  @PAUSED: 2
   @ENDED: 3
 
   constructor: (options) ->
@@ -30,13 +30,14 @@ class Pump extends EventEmitter
     else
       throw new Error 'Argument must be datapumps.Buffer or stream.Readable'
 
+    @_sourceEnded = false
     @_from.on 'end', => do @sourceEnded
 
     @
 
   sourceEnded: ->
     @currentRead.cancel() if @currentRead
-    @_state = Pump.SOURCE_ENDED
+    @_sourceEnded = true
 
   buffers: (buffers = null) ->
     return @_buffers if buffers == null
@@ -51,13 +52,26 @@ class Pump extends EventEmitter
 
   start: ->
     throw new Error 'Source is not configured' if !@_from
-    @_state = Pump.STARTED if @_state == Pump.STOPPED
+    throw new Error 'Pump is already started' if @_state != Pump.STOPPED
+    @_state = Pump.STARTED
     @_errorBuffer = new Buffer if !@_errorBuffer?
+    for name, buffer of @_buffers
+      buffer.on 'end', @_outputBufferEnded.bind @
     do @_pump
     @
 
+  _outputBufferEnded: ->
+    allEnded = true
+    for name, buffer of @_buffers
+      allEnded = false if !buffer.isEnded()
+    return if !allEnded
+
+    @_state = Pump.ENDED
+    @emit 'end'
+
   _pump: ->
-    return do @subscribeForOutputBufferEnds if @_state == Pump.SOURCE_ENDED
+    return do @sealOutputBuffers if @_sourceEnded == true
+    return if @_state == Pump.PAUSED
 
     (@currentRead = @_from.readAsync())
       .cancellable()
@@ -69,16 +83,9 @@ class Pump extends EventEmitter
         @_errorBuffer.write err
       .done => do @_pump
 
-  subscribeForOutputBufferEnds: ->
+  sealOutputBuffers: ->
     for name, buffer of @_buffers
-      buffer.on 'end', @outputBufferEnded.bind @
-      do buffer.seal
-
-  outputBufferEnded: ->
-    for name, buffer of @_buffers
-      return if !buffer.isEnded()
-    @_state = Pump.ENDED
-    @emit 'end'
+      do buffer.seal if !buffer.isSealed()
 
   _process: (data) ->
     @buffer().writeAsync data
@@ -102,5 +109,6 @@ class Pump extends EventEmitter
   errorBuffer: (buffer = null) ->
     return @_errorBuffer if buffer == null
     @_errorBuffer = buffer
+    @
 
 module.exports = Pump
