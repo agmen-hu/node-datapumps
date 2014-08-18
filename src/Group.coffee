@@ -76,6 +76,11 @@ class Group extends EventEmitter
     @_inputPump.from buffer
     @
 
+  mixin: (mixins) ->
+    throw new Error 'Input pump is not set, use .setInputPump to set it' if !@_inputPump?
+    @_inputPump.mixin mixins
+    @
+
   process: ->
     throw new Error 'Cannot call .process() on a group: data in a group is transformed by its pumps.'
 
