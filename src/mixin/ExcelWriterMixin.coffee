@@ -56,15 +56,24 @@ ExcelWriterMixin = (onMixin) ->
     # This mixin extends the `target` object. It add an `_excel` property and the methods below:
     target._excel = {}
 
-    # Creates the workbook if not already created.
+    # Creates the workbook which is written to disk when the pump ends.
     target.createWorkbook = (path) ->
       throw new Error 'Workbook already created' if @_excel.workbook?
-      @_excel.workbook = new excel4node.WorkBook()
+      @workbook new excel4node.WorkBook()
       @_excel.path = path
-      @_excel.boldStyle = @_excel.workbook.Style()
-      @_excel.boldStyle.Font.Bold()
+
+      @on 'end', =>
+        @_excel.workbook.write @_excel.path
 
       @_excel.workbook
+
+    # Set or get workbook
+    target.workbook = (workbook = null) ->
+      return @_excel.workbook if workbook == null
+      @_excel.workbook = workbook
+      @_excel.boldStyle = @_excel.workbook.Style()
+      @_excel.boldStyle.Font.Bold()
+      @
 
     # Create a new worksheet with given name. Any subsequent cell accessor methods (e.g.
     # `.writerHeader`, `.writeRow`) will write to the new worksheet.
@@ -95,10 +104,6 @@ ExcelWriterMixin = (onMixin) ->
       throw new Error 'Use createWorksheet before writing rows' if !@_excel.worksheet?
       @_excel.worksheet.Cell(@_excel.currentRow, index + 1).String(value) for value, index in columns
       @_excel.currentRow++
-
-    # Write the xlsx file when pumping is ended.
-    target.on 'end', ->
-      target._excel.workbook.write target._excel.path if target._excel.workbook?
 
     onMixin.apply(target, [])
 
