@@ -114,6 +114,9 @@ class Pump extends EventEmitter
     mixin @ for mixin in mixins
     @
 
+  isStopped: ->
+    @_state == Pump.STOPPED
+
   isEnded: ->
     @_state == Pump.ENDED
 
@@ -136,5 +139,12 @@ class Pump extends EventEmitter
     @_state = Pump.STARTED
     do @_pump
     @
+
+  whenFinished: ->
+    return new Promise (resolve, reject) =>
+      @on 'end', ->
+        resolve()
+      @on 'error', ->
+        reject 'Pumping failed. See .errorBuffer() contents for error messages'
 
 module.exports = Pump
