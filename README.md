@@ -170,6 +170,27 @@ etlProcess
 ```
 Please note that you cannot use `.process` method on a group.
 
+## Error handling
+Errors may occur while data is transfered between systems. Most of the time, you don't want to stop
+on the first error but complete the transfer and re-run after fixing problems. Therefore
+the pump group has an error buffer (`.errorBuffer()`) which can hold ten error messages by default.
+When the error buffer fills up, `error` event is triggered and `.whenFinised()` promise is rejected:
+```js
+group
+  .start()
+  .whenFinished()
+    .then(function() {
+      if (!group.errorBuffer().isEmpty()) {
+        console.log("Transfer finished, but with errors.");
+        // errors list will be at group.errorBuffer().getContent()
+      }
+    })
+    .catch(function() {
+      console.log("Pump group failed with errors");
+      // errors list will be at group.errorBuffer().getContent()
+    });
+```
+
 ## Mixins
 The core components of datapumps is only responsible for passing data in a flow-controlled manner.
 The features required for import, export or transfer is provided by mixins:
