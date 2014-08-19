@@ -50,6 +50,10 @@ class Pump extends EventEmitter
     throw new Error("No such buffer: #{name}") if !@_buffers[name]
     @_buffers[name]
 
+  to: (pump, bufferName) ->
+    pump.from @buffer bufferName
+    @
+
   start: ->
     throw new Error 'Source is not configured' if !@_from
     throw new Error 'Pump is already started' if @_state != Pump.STOPPED
