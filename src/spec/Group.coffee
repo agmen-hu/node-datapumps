@@ -134,6 +134,25 @@ describe 'Group', ->
       done()
     buffer.write 'test'
 
+  describe '#pause()', ->
+    it 'should pause all pumps that has started state', ->
+      group = new Group
+      group.addPump 'test'
+        .from new Buffer
+      group.addPump 'test2'
+        .from group.buffer 'test'
+      group.addPump 'test3'
+        .from group.buffer 'test2'
+      group.run = ->
+        @runPumps [ 'test', 'test2' ]
+
+      group.start()
+      group.pause()
+
+      group.pump('test').isPaused().should.be.true;
+      group.pump('test2').isPaused().should.be.true;
+      group.pump('test3').isStopped().should.be.true;
+
   describe '#buffer(name)', ->
     it 'should accept buffer path for name (i.e. pumpName/bufferName)', ->
       group = new Group
