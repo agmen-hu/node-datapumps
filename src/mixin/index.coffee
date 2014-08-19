@@ -1,4 +1,5 @@
 module.exports =
+  ObjectTransformMixin: require './ObjectTransformMixin'
   CsvWriterMixin: require './CsvWriterMixin'
   ExcelReaderMixin: require './ExcelReaderMixin'
   ExcelWriterMixin: require './ExcelWriterMixin'
