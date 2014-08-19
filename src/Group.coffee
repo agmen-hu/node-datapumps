@@ -56,7 +56,7 @@ class Group extends EventEmitter
 
   expose: (exposedName, bufferPath) ->
     throw new Error "Already exposed a buffer with name #{exposedName}" if @_exposedBuffers[exposedName]?
-    @_exposedBuffers[exposedName] = @_getBufferByPath(bufferPath)
+    @_exposedBuffers[exposedName] = @_getBufferByPath bufferPath
 
   _getBufferByPath: (bufferPath) ->
     items = bufferPath.split('/')
@@ -65,8 +65,12 @@ class Group extends EventEmitter
     @pump(pumpName).buffer(bufferName ? 'output')
 
   buffer: (name = 'output') ->
-    throw new Error "No such buffer: #{name}" if !@_exposedBuffers[name]
-    @_exposedBuffers[name]
+    try
+      result = @_exposedBuffers[name] ? @_getBufferByPath name
+    catch
+
+    throw new Error "No such buffer: #{name}" if !result
+    result
 
   inputPump: (pumpName = null) ->
     return @_inputPump if !pumpName?

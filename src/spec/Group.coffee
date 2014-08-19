@@ -108,8 +108,7 @@ describe 'Group', ->
   describe '#from(buffer)', ->
     it 'should call .from on pump configured in .inputPump', ->
       group = new Group
-      group.addPump 'test'
-      group.inputPump 'test'
+      group.addInputPump 'test'
       buffer = new Buffer
       sinon.spy group.pump('test'), 'from'
       group.from buffer
@@ -134,3 +133,12 @@ describe 'Group', ->
     group.on 'error', ->
       done()
     buffer.write 'test'
+
+  describe '#buffer(name)', ->
+    it 'should accept buffer path for name (i.e. pumpName/bufferName)', ->
+      group = new Group
+      group.addPump 'test'
+      group.buffer 'test/output'
+        .should.equal group.pump('test').buffer('output')
+      group.buffer 'test'
+        .should.equal group.pump('test').buffer()
