@@ -88,7 +88,17 @@ class Pump extends EventEmitter
       do buffer.seal if !buffer.isSealed()
 
   _process: (data) ->
-    @buffer().writeAsync data
+    @copy data
+
+  copy: (data, buffers = null) ->
+    buffers = [ 'output' ] if !buffers?
+    buffers = [ buffers ] if typeof buffers == 'string'
+    throw new Error 'buffers must be an array of buffer names or a single buffers name' if !Array.isArray buffers
+
+    if buffers.length == 1
+      @buffer(buffers[0]).writeAsync data
+    else
+      Promise.all(@buffer(buffer).writeAsync data for buffer in buffers)
 
   process: (fn) ->
     throw new Error('Process must be a function') if typeof fn != 'function'

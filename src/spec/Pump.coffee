@@ -200,3 +200,29 @@ describe 'Pump', ->
 
       pump.resume()
       pump._pump.calledOnce.should.be.true
+
+  describe '#copy(data, buffers = null)', ->
+    it 'should write data to the default buffer if buffers parameter is not given', (done) ->
+      pump = new Pump()
+      pump.copy 'test'
+        .then ->
+          pump.buffer().getContent().should.eql [ 'test' ]
+          done()
+
+    it 'should write data to the given buffer', (done) ->
+      pump = new Pump()
+      pump.copy 'test', 'output'
+        .then ->
+          pump.buffer().getContent().should.eql [ 'test' ]
+          done()
+
+    it 'should write data to the given buffers if multiple buffers are given', (done) ->
+      pump = new Pump()
+      pump.buffers
+        out1: new Buffer
+        out2: new Buffer
+      pump.copy 'test', [ 'out1', 'out2' ]
+        .then ->
+          pump.buffer('out1').getContent().should.eql [ 'test' ]
+          pump.buffer('out2').getContent().should.eql [ 'test' ]
+          done()
