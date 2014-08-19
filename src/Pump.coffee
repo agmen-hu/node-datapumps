@@ -117,6 +117,12 @@ class Pump extends EventEmitter
   isStopped: ->
     @_state == Pump.STOPPED
 
+  isStarted: ->
+    @_state == Pump.STARTED
+
+  isPaused: ->
+    @_state == Pump.PAUSED
+
   isEnded: ->
     @_state == Pump.ENDED
 
