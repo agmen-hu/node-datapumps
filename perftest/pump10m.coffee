@@ -26,7 +26,7 @@ describe 'Pump (performance test)', ->
         pumped++
         if !(pumped % 1000000)
           console.log 'Pumped ' + (pumped / 1000000) + ' million items'
-        @buffer().writeAsync data
+        @copy data
 
     pump.on 'end', ->
       if pumped == limit && created == limit
