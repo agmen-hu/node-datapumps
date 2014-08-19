@@ -38,8 +38,28 @@ class Group extends EventEmitter
     @_state = Group.STARTED
     @errorBuffer(new Buffer) if !@_errorBuffer?
     pump.errorBuffer @_errorBuffer for name, pump of @_pumps
-    do pump.start for name, pump of @_pumps
+    do @run
     @
+
+  run: ->
+    do @runPumps
+
+  runPumps: (pumps = null) ->
+    pumps = do @_getAllStoppedPumps if !pumps?
+    pumps = [ pumps ] if typeof pumps == 'string'
+    finishPromises = []
+    for pumpName in pumps
+      finishPromises.push @pump(pumpName).start().whenFinished()
+    Promise.all finishPromises
+
+  _getAllStoppedPumps: ->
+    result = []
+    for name, pump of @_pumps
+      result.push name if pump.isStopped()
+    result
+
+  isStopped: ->
+    @_state == Group.STOPPED
 
   isEnded: ->
     @_state == Group.ENDED

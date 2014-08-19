@@ -142,3 +142,20 @@ describe 'Group', ->
         .should.equal group.pump('test').buffer('output')
       group.buffer 'test'
         .should.equal group.pump('test').buffer()
+
+  describe '#runPumps(pumpNames)', ->
+    it 'should return a promise that resolves when all pumps has been finished', (done) ->
+      group = new Group
+      group.addPump 'test1'
+        .from new Buffer
+      group.addPump 'test2'
+        .from group.buffer 'test1'
+      group.addPump 'test3'
+        .from group.buffer 'test2'
+
+      group.runPumps [ 'test1', 'test2']
+        .then ->
+          done()
+
+      group.pump('test1').from().seal()
+      group.pump('test2').from().seal()
