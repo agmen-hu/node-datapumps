@@ -68,16 +68,23 @@ class Group extends EventEmitter
     throw new Error "No such buffer: #{name}" if !@_exposedBuffers[name]
     @_exposedBuffers[name]
 
-  setInputPump: (pumpName) ->
+  inputPump: (pumpName = null) ->
+    return @_inputPump if !pumpName?
     @_inputPump = @pump(pumpName)
+    @
+
+  addInputPump: (name, pump = null) ->
+    result = @addPump name, pump
+    @inputPump name
+    result
 
   from: (buffer = null) ->
-    throw new Error 'Input pump is not set, use .setInputPump to set it' if !@_inputPump?
+    throw new Error 'Input pump is not set, use .inputPump to set it' if !@_inputPump?
     @_inputPump.from buffer
     @
 
   mixin: (mixins) ->
-    throw new Error 'Input pump is not set, use .setInputPump to set it' if !@_inputPump?
+    throw new Error 'Input pump is not set, use .inputPump to set it' if !@_inputPump?
     @_inputPump.mixin mixins
     @
 
