@@ -36,7 +36,7 @@ class Group extends EventEmitter
   start: ->
     throw new Error 'Group already started' if @_state != Group.STOPPED
     @_state = Group.STARTED
-    @_errorBuffer = @errorBuffer(new Buffer) if !@_errorBuffer?
+    @errorBuffer(new Buffer) if !@_errorBuffer?
     pump.errorBuffer @_errorBuffer for name, pump of @_pumps
     do pump.start for name, pump of @_pumps
     @
