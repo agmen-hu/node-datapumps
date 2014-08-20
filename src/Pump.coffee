@@ -11,8 +11,14 @@ class Pump extends EventEmitter
   constructor: (options) ->
     @_state = Pump.STOPPED
     @_from = null
+    @_id = null
     @buffers
       output: new Buffer
+
+  id: (id = null) ->
+    return @_id if id == null
+    @_id = id
+    @
 
   from: (buffer = null) ->
     return @_from if buffer == null
@@ -84,7 +90,9 @@ class Pump extends EventEmitter
         @_process data
       .catch(Promise.CancellationError, ->)
       .catch (err) =>
-        @_errorBuffer.write err
+        @_errorBuffer.write
+          message: err
+          pump: @_id
       .done => do @_pump
 
   sealOutputBuffers: ->
