@@ -114,7 +114,7 @@ class Pump extends EventEmitter
 
   process: (fn) ->
     throw new Error('Process must be a function') if typeof fn != 'function'
-    @_process = fn.bind @
+    @_process = fn
     @
 
   mixin: (mixins) ->
