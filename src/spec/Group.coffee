@@ -27,6 +27,22 @@ describe 'Group', ->
       pump.on.calledOnce.should.be.true
       pump.on.getCall(0).args[0].should.equal 'end'
 
+    it 'should set the id of the added pump when group has id', ->
+      group = new Group
+      pump = new Pump
+      group
+        .id 'group'
+        .addPump 'test', pump
+
+      pump.id().should.equal 'group/test'
+
+    it 'should set the id of the added pump when group does not have id', ->
+      group = new Group
+      pump = new Pump
+      group.addPump 'test', pump
+
+      pump.id().should.equal 'test'
+
   describe '#start()', ->
     it 'should start all pumps', ->
       group = new Group
@@ -178,3 +194,11 @@ describe 'Group', ->
 
       group.pump('test1').from().seal()
       group.pump('test2').from().seal()
+
+  describe '#id()', ->
+    it 'should update the ids of all pumps in the group', ->
+      group = new Group
+      group.addPump 'test'
+      group.id 'group'
+
+      group.pump('test').id().should.equal 'group/test'

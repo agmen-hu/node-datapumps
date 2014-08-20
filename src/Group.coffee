@@ -13,11 +13,14 @@ class Group extends EventEmitter
     @_pumps = {}
     @_exposedBuffers = {}
     @_state = Group.STOPPED
+    @_id = null
 
   addPump: (name, pump = null) ->
     throw new Error 'Pump already exists' if @_pumps[name]?
     @_pumps[name] = pump ? new Pump
     @_pumps[name].on 'end', => @pumpEnded(name)
+    pumpId = if @_id? then "#{@_id}/#{name}" else name
+    @_pumps[name].id pumpId
     @_pumps[name]
 
   pumpEnded: (name) ->
@@ -140,6 +143,12 @@ class Group extends EventEmitter
     throw new Error 'Cannot .resume() a group that is not paused' if @_state != Group.PAUSED
     @_state = Group.STARTED
     do pump.resume for name, pump of @_pumps
+    @
+
+  id: (id = null) ->
+    return @_id if id == null
+    @_id = id
+    pump.id "#{@_id}/#{name}" for name, pump of @_pumps
     @
 
 module.exports = Group
