@@ -171,7 +171,7 @@ describe 'Pump', ->
       pump = new Pump
       ( ->
         pump.from('test')
-      ).should.throw 'Argument must be datapumps.Buffer or stream.Readable'
+      ).should.throw 'Argument must be datapumps.Buffer or stream'
 
   describe '#pause()', ->
     it 'should pause the pump', (done) ->
