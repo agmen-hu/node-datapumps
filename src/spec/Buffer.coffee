@@ -111,3 +111,13 @@ describe 'Buffer', ->
         do done
 
       do buffer.seal
+
+  describe 'Buffer.defaultBufferSize', ->
+    it 'should set default buffer size for newly created buffers', ->
+      Buffer.defaultBufferSize 500
+      buffer = new Buffer
+      buffer.size.should.equal 500
+
+    it 'should return default buffer size when called without arguments', ->
+      Buffer.defaultBufferSize 1000
+      Buffer.defaultBufferSize().should.equal 1000

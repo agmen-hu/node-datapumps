@@ -2,9 +2,15 @@ EventEmitter = require('events').EventEmitter
 Promise = require('bluebird')
 
 class Buffer extends EventEmitter
+  @_defaultBufferSize: 10
+
+  @defaultBufferSize: (size) ->
+    return Buffer._defaultBufferSize if !size?
+    Buffer._defaultBufferSize = size
+
   constructor: (options = {}) ->
     @content = options.content ? []
-    @size = options.size ? 10
+    @size = options.size ? Buffer._defaultBufferSize
     @_sealed = options.sealed ? false
 
   isEmpty: ->
