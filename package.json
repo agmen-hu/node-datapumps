@@ -35,5 +35,13 @@
   },
   "scripts": {
     "test": "mocha --compilers coffee:coffee-script/register src/spec src/mixin/spec"
-  }
+  },
+  "keywords": [
+    "etl",
+    "import",
+    "export",
+    "batch",
+    "excel",
+    "xlsx"
+  ]
 }
