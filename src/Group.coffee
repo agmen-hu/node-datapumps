@@ -13,6 +13,7 @@ class Group extends EventEmitter
     @_pumps = {}
     @_exposedBuffers = {}
     @_state = Group.STOPPED
+    @_errorBuffer = new Buffer
     @_id = null
 
   addPump: (name, pump = null) ->
@@ -39,10 +40,15 @@ class Group extends EventEmitter
   start: ->
     throw new Error 'Group already started' if @_state != Group.STOPPED
     @_state = Group.STARTED
-    @errorBuffer(new Buffer) if !@_errorBuffer?
+    @_registerErrorBufferEvents()
     pump.errorBuffer @_errorBuffer for name, pump of @_pumps
     do @run
     @
+
+  _registerErrorBufferEvents: ->
+    @_errorBuffer.on 'full', =>
+      do @pause
+      @emit 'error'
 
   run: ->
     do @runPumps
@@ -127,9 +133,6 @@ class Group extends EventEmitter
   errorBuffer: (buffer = null) ->
     return @_errorBuffer if buffer == null
     @_errorBuffer = buffer
-    @_errorBuffer.on 'full', =>
-      do @pause
-      @emit 'error'
     @
 
   pause: ->
