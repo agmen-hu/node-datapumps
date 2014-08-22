@@ -20,7 +20,7 @@ class Buffer extends EventEmitter
     throw new Error('Cannot write sealed buffer') if @_sealed == true
     throw new Error('Buffer is full') if @isFull()
     @content.push data
-    @emit 'write'
+    @emit 'write', data
     @emit 'full' if @isFull()
     @
 
@@ -36,7 +36,7 @@ class Buffer extends EventEmitter
   read: ->
     throw new Error('Buffer is empty') if @isEmpty()
     result = @content.shift()
-    @emit 'release'
+    @emit 'release', result
     if @isEmpty()
       @emit 'empty'
       @emit 'end' if @_sealed == true
