@@ -50,7 +50,8 @@ Create a group of pumps to import, export, transform or transfer data.
 ## Pump
 A pump reads data from its input and copies it to the output buffer by default:
 ```js
-(pump = new Pump())
+datapumps = require('datapumps');
+(pump = new datapumps.Pump())
   .from(<put a nodejs stream or datapumps buffer here>)
   .start()
 ```
@@ -70,7 +71,7 @@ ticketsPump
     closedTickets: pump.createBuffer(),
   });
 
-reminderMailer = new Pump()
+reminderMailer = new datapumps.Pump()
 reminderMailer
   .from(ticketPump.buffer('openTickets'))
   ...
@@ -210,7 +211,7 @@ after the first error occured:
 d.errorBuffer().on 'write', (data) ->
   console.log data
   d.buffer('test/output').on 'write', (data) ->
-    console.log "#{data} was written to test/output"
+    console.log "#{data} was written to test/output buffer"
 
 d.start()
 ```
