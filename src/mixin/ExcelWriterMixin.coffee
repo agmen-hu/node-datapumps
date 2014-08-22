@@ -105,6 +105,6 @@ ExcelWriterMixin = (onMixin) ->
       @_excel.worksheet.Cell(@_excel.currentRow, index + 1).String(value) for value, index in columns
       @_excel.currentRow++
 
-    onMixin.apply(target, [])
+    onMixin.apply(target, [ target ])
 
 module.exports = ExcelWriterMixin
