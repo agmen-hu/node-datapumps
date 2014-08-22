@@ -5,7 +5,7 @@ class Buffer extends EventEmitter
   constructor: (options = {}) ->
     @content = options.content ? []
     @size = options.size ? 10
-    @_sealed = false
+    @_sealed = options.sealed ? false
 
   isEmpty: ->
     @content.length == 0
