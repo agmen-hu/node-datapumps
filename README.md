@@ -191,6 +191,37 @@ group
     });
 ```
 
+### Debugging
+The following example shows a fingers-crossed type logging, i.e. debug logging is turned on
+after the first error occured:
+
+```coffee
+{ group } = require('datapumps')
+
+(d = group())
+  .addPump 'test'
+    .from d.createBuffer
+      sealed: true,
+      content: [ 'first', 'second', 'third', 'fourth' ]
+    .process (data) ->
+      throw new Error 'Start debugging', data if data == 'second'
+      @copy data
+
+d.errorBuffer().on 'write', (data) ->
+  console.log data
+  d.buffer('test/output').on 'write', (data) ->
+    console.log "#{data} was written to test/output"
+
+d.start()
+```
+
+The output:
+```
+{ message: [Error: Start debugging], pump: 'test' }
+test/output was written third
+test/output was written fourth
+```
+
 ## Mixins
 The core components of datapumps is only responsible for passing data in a flow-controlled manner.
 The features required for import, export or transfer is provided by mixins:
