@@ -218,8 +218,8 @@ d.start()
 The output:
 ```
 { message: [Error: Start debugging], pump: 'test' }
-test/output was written third
-test/output was written fourth
+third was written to test/output buffer
+fourth was written to test/output buffer
 ```
 
 ## Mixins
