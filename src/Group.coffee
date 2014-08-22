@@ -94,10 +94,9 @@ class Group extends EventEmitter
     @_exposedBuffers[exposedName] = @_getBufferByPath bufferPath
 
   _getBufferByPath: (bufferPath) ->
-    items = bufferPath.split('/')
-    throw new Error 'bufferPath format must be <pumpName>/<bufferName>' if items.length > 2
-    [ pumpName, bufferName ] = items
-    @pump(pumpName).buffer(bufferName ? 'output')
+    [ pumpName, bufferNames... ] = bufferPath.split('/')
+    bufferName = if bufferNames.length then bufferNames.join('/')  else 'output'
+    @pump(pumpName).buffer bufferName
 
   buffer: (name = 'output') ->
     try
