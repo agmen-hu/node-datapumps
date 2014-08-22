@@ -47,7 +47,7 @@ class Buffer extends EventEmitter
       Promise.resolve(@read())
     else
       new Promise (resolve, reject) =>
-        @once 'write', => resolve(@read())
+        @once 'write', => resolve @read()
 
   seal: ->
     throw new Error('Buffer already sealed') if @_sealed == true
