@@ -8,7 +8,7 @@ class Pump extends EventEmitter
   @PAUSED: 2
   @ENDED: 3
 
-  constructor: (options) ->
+  constructor: () ->
     @_state = Pump.STOPPED
     @_from = null
     @_id = null
