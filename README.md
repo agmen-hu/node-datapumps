@@ -8,12 +8,12 @@ Create a group of pumps to import, export, transform or transfer data.
  * Create a group:
    ```js
    var datapumps = require('datapumps');
-   var exporter = datapumps.group();
+   var pumpGroup = datapumps.group();
    ```
 
  * Create a pump that loads the data from mysql:
    ```js
-   exporter.addPump('customers')
+   pumpGroup.addPump('customers')
      .from(mysqlConnection.query('SELECT id,last_name,first_name FROM customer').stream({highWaterMark: 5}));
    ```
    This pump will read the query results into a buffer. The pump controls the data flow, i.e.
@@ -21,8 +21,8 @@ Create a group of pumps to import, export, transform or transfer data.
 
  * Create a pump that writes the data to csv:
    ```js
-   exporter.addPump('csvWriter')
-     .from(exporter.pump('customers').buffer())
+   pumpGroup.addPump('csvWriter')
+     .from(pumpGroup.pump('customers').buffer())
      .mixin(datapumps.mixin.CsvWriterMixin({
        path: 'test.csv',
        headers: [ 'Id', 'First Name', 'Last Name' ]
@@ -38,7 +38,7 @@ Create a group of pumps to import, export, transform or transfer data.
 
  * Register a listener for `end` event and `.start()` the pump:
    ```js
-   exporter
+   pumpGroup
      .on('end', function() {
        console.log('CSV export complete.');
      })
