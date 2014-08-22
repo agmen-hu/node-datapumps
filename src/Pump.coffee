@@ -87,7 +87,7 @@ class Pump extends EventEmitter
       .cancellable()
       .then (data) =>
         @currentRead = null
-        @_process data
+        @_process data, @
       .catch(Promise.CancellationError, ->)
       .catch (err) =>
         @_errorBuffer.write
