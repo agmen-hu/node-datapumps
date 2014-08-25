@@ -26,6 +26,8 @@ class Pump extends EventEmitter
       throw new Error 'Cannot change source buffer after pumping has been started'
     if buffer instanceof Buffer
       @_from = buffer
+    else if buffer instanceof Pump
+      @_from = buffer.buffer()
     else if buffer instanceof require('stream')
       @_from = new Buffer
         size: 1000
