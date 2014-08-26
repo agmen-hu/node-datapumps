@@ -36,8 +36,7 @@ class Buffer extends EventEmitter
     else
       new Promise (resolve, reject) =>
         @once 'release', =>
-          @write(data)
-          resolve()
+          resolve @writeAsync data
 
   read: ->
     throw new Error('Buffer is empty') if @isEmpty()
@@ -53,7 +52,7 @@ class Buffer extends EventEmitter
       Promise.resolve(@read())
     else
       new Promise (resolve, reject) =>
-        @once 'write', => resolve @read()
+        @once 'write', => resolve @readAsync()
 
   seal: ->
     throw new Error('Buffer already sealed') if @_sealed == true
