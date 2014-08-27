@@ -19,10 +19,11 @@
   "dependencies": {
     "bluebird": "^2.2.2",
     "coffee-script": "^1.7.1",
-    "fast-csv": "~0.4.2",
-    "xlsx": "~0.7.8",
     "excel4node": "~0.0.9",
-    "mysql": "~2.4.2"
+    "fast-csv": "~0.4.2",
+    "mongodb": "^1.4.9",
+    "mysql": "~2.4.2",
+    "xlsx": "~0.7.8"
   },
   "devDependencies": {
     "grunt": "~0.4.1",
