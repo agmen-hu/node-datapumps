@@ -226,9 +226,10 @@ fourth was written to test/output buffer
 ## Mixins
 The core components of datapumps is only responsible for passing data in a flow-controlled manner.
 The features required for import, export or transfer is provided by mixins:
- * CsvWriterMixin - Writes csv files using fast-csv package
- * ExcelWriterMixin - Writes excel xlsx workbooks
- * MysqlMixin - Reads and writes on a mysql connection
+ * [ObjectTransformMixin](http://agmen-hu.github.io/node-datapumps/docs/mixin/ObjectTransformMixin.html) - Common object transformation and validation methods
+ * [CsvWriterMixin](http://agmen-hu.github.io/node-datapumps/docs/mixin/CsvWriterMixin.html) - Writes csv files using fast-csv package
+ * [ExcelWriterMixin](http://agmen-hu.github.io/node-datapumps/docs/mixin/ExcelWriterMixin.html) - Writes excel xlsx workbooks
+ * [ExcelReaderMixin](http://agmen-hu.github.io/node-datapumps/docs/mixin/ExcelReaderMixin.html) - Reads excel xlsx workbooks
+ * [MysqlMixin](http://agmen-hu.github.io/node-datapumps/docs/mixin/MysqlMixin.html) - Queries and writes mysql databases
 
-For more details, see the documented source code until the docco docs become available. If you
-implement new mixins, please fork datapumps and make a pull request.
+When you implement new mixins, please fork datapumps and make a pull request.
