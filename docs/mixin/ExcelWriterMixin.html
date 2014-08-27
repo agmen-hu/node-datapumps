@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>ExcelWriterMixin.coffee</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+    
+      <ul id="jump_to">
+        <li>
+          <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
+          <a class="small" href="javascript:void(0);">+</a>
+          <div id="jump_wrapper">
+          <div id="jump_page">
+            
+              
+              <a class="source" href="CsvWriterMixin.html">
+                CsvWriterMixin.coffee
+              </a>
+            
+              
+              <a class="source" href="ExcelReaderMixin.html">
+                ExcelReaderMixin.coffee
+              </a>
+            
+              
+              <a class="source" href="ExcelWriterMixin.html">
+                ExcelWriterMixin.coffee
+              </a>
+            
+              
+              <a class="source" href="MysqlMixin.html">
+                MysqlMixin.coffee
+              </a>
+            
+              
+              <a class="source" href="ObjectTransformMixin.html">
+                ObjectTransformMixin.coffee
+              </a>
+            
+          </div>
+        </li>
+      </ul>
+    
+    <ul class="sections">
+        
+          <li id="title">
+              <div class="annotation">
+                  <h1>ExcelWriterMixin.coffee</h1>
+              </div>
+          </li>
+        
+        
+        
+        <li id="section-1">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>
+              <p>OOXML Excel (.xlsx) writer mixin for node-datapumps.</p>
+<p>Usage:</p>
+<ul>
+<li><p>Require excel writer mixin:</p>
+<pre><code class="lang-coffee">{ ExcelWriterMixin } = <span class="hljs-built_in">require</span>(<span class="hljs-string">'datapumps/mixins'</span>)
+</code></pre>
+</li>
+<li><p>The parameter of the mixin is a function than will be executed when the mixin is added to a pump. Use that function to create your workbook and headers:</p>
+<pre><code class="lang-coffee">pump
+  .mixin ExcelWriterMixin<span class="hljs-function"> -&gt;</span>
+    pump.createWorkbook <span class="hljs-string">'test.xlsx'</span>
+    pump.createWorksheet <span class="hljs-string">'MySheet'</span>
+    pump.writeHeaders [ <span class="hljs-string">'Name'</span>, <span class="hljs-string">'Code'</span> ]
+</code></pre>
+</li>
+<li><p>Use <code>.writeRow</code> in the <code>.process</code> method of the pump to write a row in excel:</p>
+<pre><code class="lang-coffee">pump
+  .process <span class="hljs-function"><span class="hljs-params">(product)</span> -&gt;</span>
+    pump.writeRow [ product.name, product.code ]
+</code></pre>
+</li>
+</ul>
+<p>Complete example:</p>
+<pre><code class="lang-coffee">customersExcelSheet = <span class="hljs-keyword">new</span> Pump
+customersExcelSheet
+  .from &lt;yoursource&gt;
+  .mixin ExcelWriterMixin<span class="hljs-function"> -&gt;</span>
+    <span class="hljs-property">@createWorkbook</span> <span class="hljs-string">'test.xlsx'</span>
+    <span class="hljs-property">@createWorksheet</span> <span class="hljs-string">'Customers'</span>
+    <span class="hljs-property">@writeHeaders</span> [
+      <span class="hljs-string">'First name'</span>
+      <span class="hljs-string">'Last name'</span>
+      <span class="hljs-string">'Zip'</span>
+      <span class="hljs-string">'City'</span>
+    ]
+  .process <span class="hljs-function"><span class="hljs-params">(customer)</span> -&gt;</span>
+    <span class="hljs-property">@writeRow</span> [
+      customer.first_name
+      customer.last_name
+      customer.zip
+      customer.city
+    ]
+</code></pre>
+<p>Based on excel4node (<a href="https://github.com/natergj/excel4node">https://github.com/natergj/excel4node</a>).</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>excel4node = <span class="hljs-built_in">require</span>(<span class="hljs-string">'excel4node'</span>)
+
+<span class="hljs-function"><span class="hljs-title">ExcelWriterMixin</span> = <span class="hljs-params">(onMixin)</span> -&gt;</span>
+  <span class="hljs-function"><span class="hljs-params">(target)</span> -&gt;</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-2">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>
+              <p>This mixin extends the <code>target</code> object. It add an <code>_excel</code> property and the methods below:</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    target._excel = {}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-3">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-3">&#182;</a>
+              </div>
+              <p>Creates the workbook which is written to disk when the pump ends.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    target.<span class="hljs-function"><span class="hljs-title">createWorkbook</span> = <span class="hljs-params">(path)</span> -&gt;</span>
+      <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> Error <span class="hljs-string">'Workbook already created'</span> <span class="hljs-keyword">if</span> <span class="hljs-property">@_excel</span>.workbook?
+      <span class="hljs-property">@workbook</span> <span class="hljs-keyword">new</span> excel4node.WorkBook()
+      <span class="hljs-property">@_excel</span>.path = path
+
+      <span class="hljs-property">@on</span> <span class="hljs-string">'end'</span>,<span class="hljs-function"> =&gt;</span>
+        <span class="hljs-property">@_excel</span>.workbook.write <span class="hljs-property">@_excel</span>.path
+
+      <span class="hljs-property">@_excel</span>.workbook</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-4">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-4">&#182;</a>
+              </div>
+              <p>Set or get workbook</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    target.<span class="hljs-function"><span class="hljs-title">workbook</span> = <span class="hljs-params">(workbook = <span class="hljs-literal">null</span>)</span> -&gt;</span>
+      <span class="hljs-keyword">return</span> <span class="hljs-property">@_excel</span>.workbook <span class="hljs-keyword">if</span> workbook == <span class="hljs-literal">null</span>
+      <span class="hljs-property">@_excel</span>.workbook = workbook
+      <span class="hljs-property">@_excel</span>.boldStyle = <span class="hljs-property">@_excel</span>.workbook.Style()
+      <span class="hljs-property">@_excel</span>.boldStyle.Font.Bold()
+      @</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-5">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-5">&#182;</a>
+              </div>
+              <p>Create a new worksheet with given name. Any subsequent cell accessor methods (e.g.
+<code>.writerHeader</code>, <code>.writeRow</code>) will write to the new worksheet.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    target.<span class="hljs-function"><span class="hljs-title">createWorksheet</span> = <span class="hljs-params">(name)</span> -&gt;</span>
+      <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> Error <span class="hljs-string">'Use createWorkbook before creating worksheet'</span> <span class="hljs-keyword">if</span> !<span class="hljs-property">@_excel</span>.workbook?
+      <span class="hljs-property">@_excel</span>.worksheet = <span class="hljs-property">@_excel</span>.workbook.WorkSheet(name)
+      <span class="hljs-property">@_excel</span>.currentRow = <span class="hljs-number">1</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-6">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-6">&#182;</a>
+              </div>
+              <p>Returns current worksheet.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    target.<span class="hljs-function"><span class="hljs-title">currentWorksheet</span> = -&gt;</span>
+      <span class="hljs-property">@_excel</span>.worksheet</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-7">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-7">&#182;</a>
+              </div>
+              <p>Writes header row. See usage example at the top.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    target.<span class="hljs-function"><span class="hljs-title">writeHeaders</span> = <span class="hljs-params">(headers)</span> -&gt;</span>
+      <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> Error <span class="hljs-string">'Use createWorksheet before writing headers'</span> <span class="hljs-keyword">if</span> !<span class="hljs-property">@_excel</span>.worksheet?
+      <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> Error <span class="hljs-string">'Use writeHeaders before writing any rows to the worksheet'</span> <span class="hljs-keyword">if</span> <span class="hljs-property">@_excel</span>.currentRow != <span class="hljs-number">1</span>
+      <span class="hljs-property">@_writeHeader</span> index, header <span class="hljs-keyword">for</span> header, index <span class="hljs-keyword">in</span> headers
+      <span class="hljs-property">@_excel</span>.currentRow = <span class="hljs-number">2</span>
+      @
+
+    target.<span class="hljs-function"><span class="hljs-title">_writeHeader</span> = <span class="hljs-params">(index, header)</span> -&gt;</span>
+      <span class="hljs-property">@_excel</span>.worksheet.Cell(<span class="hljs-number">1</span>, index + <span class="hljs-number">1</span>)
+        .String(header)
+        .Style(<span class="hljs-property">@_excel</span>.boldStyle)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-8">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-8">&#182;</a>
+              </div>
+              <p>Writes a new row in the worksheet. See usage example at the top.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    target.<span class="hljs-function"><span class="hljs-title">writeRow</span> = <span class="hljs-params">(columns)</span> -&gt;</span>
+      <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> Error <span class="hljs-string">'Use createWorksheet before writing rows'</span> <span class="hljs-keyword">if</span> !<span class="hljs-property">@_excel</span>.worksheet?
+      <span class="hljs-property">@_excel</span>.worksheet.Cell(<span class="hljs-property">@_excel</span>.currentRow, index + <span class="hljs-number">1</span>).String(value) <span class="hljs-keyword">for</span> value, index <span class="hljs-keyword">in</span> columns
+      <span class="hljs-property">@_excel</span>.currentRow++
+
+    onMixin.apply(target, [ target ])
+
+<span class="hljs-built_in">module</span>.exports = ExcelWriterMixin</pre></div></div>
+            
+        </li>
+        
+    </ul>
+  </div>
+</body>
+</html>

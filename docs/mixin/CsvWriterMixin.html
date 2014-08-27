@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>CsvWriterMixin.coffee</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+    
+      <ul id="jump_to">
+        <li>
+          <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
+          <a class="small" href="javascript:void(0);">+</a>
+          <div id="jump_wrapper">
+          <div id="jump_page">
+            
+              
+              <a class="source" href="CsvWriterMixin.html">
+                CsvWriterMixin.coffee
+              </a>
+            
+              
+              <a class="source" href="ExcelReaderMixin.html">
+                ExcelReaderMixin.coffee
+              </a>
+            
+              
+              <a class="source" href="ExcelWriterMixin.html">
+                ExcelWriterMixin.coffee
+              </a>
+            
+              
+              <a class="source" href="MysqlMixin.html">
+                MysqlMixin.coffee
+              </a>
+            
+              
+              <a class="source" href="ObjectTransformMixin.html">
+                ObjectTransformMixin.coffee
+              </a>
+            
+          </div>
+        </li>
+      </ul>
+    
+    <ul class="sections">
+        
+          <li id="title">
+              <div class="annotation">
+                  <h1>CsvWriterMixin.coffee</h1>
+              </div>
+          </li>
+        
+        
+        
+        <li id="section-1">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>
+              <p>CSV writer mixin for node-datapumps</p>
+<p>Usage:</p>
+<ul>
+<li><p>Require csv writer mixin:</p>
+<pre><code class="lang-coffee">{ CsvWriterMixin } = <span class="hljs-built_in">require</span>(<span class="hljs-string">'datapumps/mixins'</span>)
+</code></pre>
+</li>
+<li><p>Provide parameters for the mixin:</p>
+<pre><code class="lang-coffee">pump
+  .mixin CsvWriterMixin
+    <span class="hljs-attribute">path</span>: <span class="hljs-string">'test.csv'</span>
+    <span class="hljs-attribute">headers</span>: [ <span class="hljs-string">'Name'</span>, <span class="hljs-string">'Code'</span> ]
+</code></pre>
+</li>
+<li><p>Use <code>.writeRow</code> in the <code>.process</code> method of the pump to write a row in csv:</p>
+<pre><code class="lang-coffee">pump
+  .process <span class="hljs-function"><span class="hljs-params">(product)</span> -&gt;</span>
+    pump.writeRow [ product.name, product.code ]
+</code></pre>
+</li>
+</ul>
+<p>Complete example:</p>
+<pre><code class="lang-coffee">(customersCsv = <span class="hljs-keyword">new</span> Pump)
+  .from &lt;yoursource&gt;
+  .mixin CsvWriterMixin
+    <span class="hljs-attribute">path</span>: <span class="hljs-string">'test.csv'</span>
+    <span class="hljs-attribute">headers</span>: [
+      <span class="hljs-string">'First name'</span>
+      <span class="hljs-string">'Last name'</span>
+      <span class="hljs-string">'Zip'</span>
+      <span class="hljs-string">'City'</span>
+    ]
+  .process <span class="hljs-function"><span class="hljs-params">(customer)</span> -&gt;</span>
+    <span class="hljs-property">@writeRow</span> [
+      customer.first_name
+      customer.last_name
+      customer.zip
+      customer.city
+    ]
+</code></pre>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>csv = <span class="hljs-built_in">require</span>(<span class="hljs-string">'fast-csv'</span>)
+fs = <span class="hljs-built_in">require</span>(<span class="hljs-string">'fs'</span>)
+
+<span class="hljs-function"><span class="hljs-title">CsvWriterMixin</span> = <span class="hljs-params">(options)</span> -&gt;</span>
+  <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> Error <span class="hljs-string">'path option is required.'</span> <span class="hljs-keyword">if</span> !options?.path
+
+  <span class="hljs-function"><span class="hljs-params">(target)</span> -&gt;</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-2">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>
+              <p>Writes a row in the csv file.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    target.<span class="hljs-function"><span class="hljs-title">writeRow</span> = <span class="hljs-params">(row)</span> -&gt;</span>
+      target._csv.writer.write(row)
+
+    target._csv = options
+    target._csv.writer = csv.createWriteStream()
+    target._csv.writer.pipe fs.createWriteStream target._csv.path, {<span class="hljs-attribute">encoding</span>: <span class="hljs-string">'utf8'</span>}
+    <span class="hljs-keyword">if</span> target._csv.headers?
+      target.writeRow target._csv.headers</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-3">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-3">&#182;</a>
+              </div>
+              <p>Finishes writing the csv when the pump finishes.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    target.<span class="hljs-literal">on</span> <span class="hljs-string">'end'</span>,<span class="hljs-function"> -&gt;</span>
+      target._csv.writer.write(<span class="hljs-literal">null</span>)
+
+<span class="hljs-built_in">module</span>.exports = CsvWriterMixin</pre></div></div>
+            
+        </li>
+        
+    </ul>
+  </div>
+</body>
+</html>
