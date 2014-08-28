@@ -174,7 +174,7 @@ describe 'Pump', ->
       ).should.throw 'Argument must be datapumps.Buffer or stream'
 
   describe '#pause()', ->
-    it 'should pause the pump', (done) ->
+    it 'should return a promise that resolves when the pump paused', (done) ->
       pump = new Pump
       pump.from new Buffer
 
@@ -182,12 +182,12 @@ describe 'Pump', ->
       pump.from().write 'test'
       pump.buffer().on 'write', ->
         pump.pause()
+          .then ->
+            pump.from().getContent().length.should.equal 1
+            pump._state.should.equal = Pump.PAUSED
+            done()
+
       pump.start()
-      setTimeout ->
-        pump.from().getContent().length.should.equal 1
-        pump._state.should.equal = Pump.PAUSED
-        done()
-      , 10
 
   describe '#resume()', ->
     it 'should resume the pump when its paused', ->

@@ -89,7 +89,7 @@ class Pump extends EventEmitter
       .cancellable()
       .then (data) =>
         @currentRead = null
-        @_process data, @
+        @_processing = @_process data, @
       .catch(Promise.CancellationError, ->)
       .catch (err) =>
         @_errorBuffer.write
@@ -144,11 +144,15 @@ class Pump extends EventEmitter
     @_errorBuffer = buffer
     @
 
+  # returns a promise that resolves when the pump is paused
   pause: ->
     return if @_state == Pump.PAUSED
     throw new Error 'Cannot .pause() a pump that is not running' if @_state != Pump.STARTED
-    @_state = Pump.PAUSED
-    @
+    if @_processing?.isPending()
+      @_processing.then => @_state = Pump.PAUSED
+    else
+      @_state = Pump.PAUSED
+      Promise.resolve()
 
   resume: ->
     throw new Error 'Cannot .resume() a pump that is not paused' if @_state != Pump.PAUSED
