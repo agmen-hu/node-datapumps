@@ -50,8 +50,8 @@ class Group extends EventEmitter
 
   _registerErrorBufferEvents: ->
     @_errorBuffer.on 'full', =>
-      do @pause
-      @emit 'error'
+      @pause()
+        .then => @emit 'error'
 
   run: ->
     do @runPumps
@@ -140,7 +140,8 @@ class Group extends EventEmitter
   pause: ->
     return if @_state == Group.PAUSED
     throw new Error 'Cannot .pause() a group that is not pumping' if @_state != Group.STARTED
-    pausePromises = do pump.pause for name, pump of @_pumps when pump.isStarted()
+    pausePromises = [ ]
+    pausePromises.push pump.pause() for name, pump of @_pumps when pump.isStarted()
     Promise.all pausePromises
       .then => @_state = Group.PAUSED
 
