@@ -37,6 +37,9 @@ class Group extends EventEmitter
     throw new Error "Pump #{name} does not exist" if !@_pumps[name]?
     @_pumps[name]
 
+  pumps: ->
+    @_pumps
+
   start: ->
     throw new Error 'Group already started' if @_state != Group.STOPPED
     @_state = Group.STARTED
