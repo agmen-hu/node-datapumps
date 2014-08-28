@@ -157,10 +157,8 @@ class Pump extends EventEmitter
     @
 
   whenFinished: ->
-    return new Promise (resolve, reject) =>
+    return new Promise (resolve) =>
       @on 'end', ->
         resolve()
-      @on 'error', ->
-        reject 'Pumping failed. See .errorBuffer() contents for error messages'
 
 module.exports = Pump
