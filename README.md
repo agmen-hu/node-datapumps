@@ -4,6 +4,11 @@
 ## Overview
 Create a group of pumps to import, export, transform or transfer data.
 
+## Installation
+```
+$ npm install datapumps --save
+```
+
 ## Usage example: csv export from mysql
  * Create a group:
    ```js
