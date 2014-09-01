@@ -50,8 +50,9 @@ class Group extends EventEmitter
 
   _registerErrorBufferEvents: ->
     @_errorBuffer.on 'full', =>
-      @pause()
-        .then => @emit 'error'
+      if @_state == Group.STARTED
+        @pause()
+          .then => @emit 'error'
 
   run: ->
     do @runPumps
