@@ -12,6 +12,7 @@ class Pump extends EventEmitter
     @_state = Pump.STOPPED
     @_from = null
     @_id = null
+    @_errorBuffer = new Buffer
     @buffers
       output: new Buffer
 
@@ -33,6 +34,7 @@ class Pump extends EventEmitter
         size: 1000
       buffer.on 'data', (data) => @_from.write data
       buffer.on 'end', => @_from.seal()
+      buffer.on 'error', (err) => @_errorBuffer.write err
       @_from.on 'full', -> buffer.pause()
       @_from.on 'release', -> buffer.resume()
     else
@@ -68,7 +70,6 @@ class Pump extends EventEmitter
     throw new Error 'Source is not configured' if !@_from
     throw new Error 'Pump is already started' if @_state != Pump.STOPPED
     @_state = Pump.STARTED
-    @_errorBuffer = new Buffer if !@_errorBuffer?
     for name, buffer of @_buffers
       buffer.on 'end', @_outputBufferEnded.bind @
     do @_pump
