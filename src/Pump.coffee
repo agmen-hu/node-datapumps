@@ -34,7 +34,9 @@ class Pump extends EventEmitter
         size: 1000
       buffer.on 'data', (data) => @_from.write data
       buffer.on 'end', => @_from.seal()
-      buffer.on 'error', (err) => @_errorBuffer.write err
+      buffer.on 'error', (err) => @_errorBuffer.write
+        message: err
+        pump: @_id
       @_from.on 'full', -> buffer.pause()
       @_from.on 'release', -> buffer.resume()
     else
