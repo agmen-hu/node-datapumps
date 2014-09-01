@@ -55,7 +55,10 @@ class Group extends EventEmitter
           .then => @emit 'error'
 
   run: ->
-    do @runPumps
+    @runPumps()
+      .catch -> # The runpumps promise is only rejected when the error buffer is full and
+                # the sub-group is stopped. All errors are in the errorbuffer now, so we can
+                # safely discard this error
 
   runPumps: (pumps = null) ->
     pumps = do @_getAllStoppedPumps if !pumps?
