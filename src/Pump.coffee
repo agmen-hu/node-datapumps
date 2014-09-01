@@ -50,9 +50,15 @@ class Pump extends EventEmitter
     @_buffers = buffers
     @
 
-  buffer: (name = 'output') ->
-    throw new Error("No such buffer: #{name}") if !@_buffers[name]
-    @_buffers[name]
+  buffer: (name = 'output', buffer = null) ->
+    if buffer == null
+      throw new Error("No such buffer: #{name}") if !@_buffers[name]
+      @_buffers[name]
+    else
+      throw new Error 'Cannot change output buffers after pumping has been started' if @_state == Pump.STARTED
+      throw new Error 'buffer must be a datapumps.Buffer' if !(buffer instanceof Buffer)
+      @_buffers[name] = buffer
+      @
 
   to: (pump, bufferName) ->
     pump.from @buffer bufferName
