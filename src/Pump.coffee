@@ -38,19 +38,15 @@ class Pump extends EventEmitter
     else
       throw new Error 'Argument must be datapumps.Buffer or stream'
 
-    @_sourceEnded = false
     @_from.on 'end', => do @sourceEnded
-
     @
 
   sourceEnded: ->
     @currentRead.cancel() if @currentRead
-    @_sourceEnded = true
 
   buffers: (buffers = null) ->
     return @_buffers if buffers == null
-    if @_state == Pump.STARTED
-      throw new Error 'Cannot change output buffers after pumping has been started'
+    throw new Error 'Cannot change output buffers after pumping has been started' if @_state == Pump.STARTED
     @_buffers = buffers
     @
 
@@ -82,7 +78,7 @@ class Pump extends EventEmitter
     @emit 'end'
 
   _pump: ->
-    return do @sealOutputBuffers if @_sourceEnded == true
+    return @sealOutputBuffers() if @_from.isEnded()
     return if @_state == Pump.PAUSED
 
     (@currentRead = @_from.readAsync())

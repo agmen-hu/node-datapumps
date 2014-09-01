@@ -95,31 +95,30 @@ describe 'Pump', ->
           done()
         .start()
 
-  it 'should seal output buffers when source buffer ends', ->
+  it 'should seal output buffers when source buffer ends', (done) ->
     source = new Buffer
-    source.callbacks = {}
-    source.on = sinon.spy (event, callback) -> source.callbacks[event] = callback
 
     pump = new Pump
     pump.from source
 
     sinon.spy pump.buffer(), 'seal'
-    do source.callbacks.end
     do pump.start
-    pump.buffer().seal.calledOnce.should.be.true
+    do source.seal
+
+    setTimeout ->
+      pump.buffer().seal.calledOnce.should.be.true
+      do done
+    , 1
 
   it 'should emit end event when all output buffers ended', ->
     source = new Buffer
-    source.callbacks = {}
-    source.on = sinon.spy (event, callback) -> source.callbacks[event] = callback
 
     pump = new Pump
     pump.from source
 
-    sinon.spy pump.buffer(), 'seal'
     endSpy = sinon.spy()
     pump.on 'end', endSpy
-    do source.callbacks.end
+    do source.seal
     do pump.start
 
     endSpy.calledOnce.should.be.true
