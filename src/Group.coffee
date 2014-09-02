@@ -83,11 +83,12 @@ class Group extends EventEmitter
     @_state == Group.ENDED
 
   whenFinished: ->
-    return new Promise (resolve, reject) =>
-      @on 'end', ->
-        resolve()
-      @on 'error', ->
-        reject 'Pumping failed. See .errorBuffer() contents for error messages'
+    if @isEnded()
+      Promise.resolve()
+    else
+      return new Promise (resolve, reject) =>
+        @on 'end', -> resolve()
+        @on 'error', -> reject 'Pumping failed. See .errorBuffer() contents for error messages'
 
   createBuffer: (options = {}) ->
     new Buffer options
