@@ -19,19 +19,9 @@ class Group extends EventEmitter
   addPump: (name, pump = null) ->
     throw new Error 'Pump already exists' if @_pumps[name]?
     @_pumps[name] = pump ? new Pump
-    @_pumps[name].on 'end', => @pumpEnded(name)
     pumpId = if @_id? then "#{@_id}/#{name}" else name
     @_pumps[name].id pumpId
     @_pumps[name]
-
-  pumpEnded: (name) ->
-    end = true
-    for name, pump of @_pumps
-      end = false if !pump.isEnded()
-    return if !end
-
-    @_state = Group.ENDED
-    @emit 'end'
 
   pump: (name) ->
     throw new Error "Pump #{name} does not exist" if !@_pumps[name]?
@@ -45,8 +35,13 @@ class Group extends EventEmitter
     @_state = Group.STARTED
     @_registerErrorBufferEvents()
     pump.errorBuffer @_errorBuffer for name, pump of @_pumps
-    do @run
+    @run()
+      .then => @_endGroup()
     @
+
+  _endGroup: ->
+    @_state = Group.ENDED
+    @emit 'end'
 
   _registerErrorBufferEvents: ->
     @_errorBuffer.on 'full', =>
@@ -55,10 +50,11 @@ class Group extends EventEmitter
           .then => @emit 'error'
 
   run: ->
-    @runPumps()
+    (result = @runPumps())
       .catch -> # The runpumps promise is only rejected when the error buffer is full and
                 # the sub-group is stopped. All errors are in the errorbuffer now, so we can
                 # safely discard this error
+    result
 
   runPumps: (pumps = null) ->
     pumps = do @_getAllStoppedPumps if !pumps?

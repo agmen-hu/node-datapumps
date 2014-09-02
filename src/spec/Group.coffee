@@ -18,15 +18,6 @@ describe 'Group', ->
         group.addPump 'test'
       ).should.throw 'Pump already exists'
 
-    it 'should register "end" listener', ->
-      group = new Group
-      pump = new Pump
-      sinon.spy pump, 'on'
-      group.addPump 'test', pump
-
-      pump.on.calledOnce.should.be.true
-      pump.on.getCall(0).args[0].should.equal 'end'
-
     it 'should set the id of the added pump when group has id', ->
       group = new Group
       pump = new Pump
