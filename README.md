@@ -42,8 +42,7 @@ $ npm install datapumps --save
          console.log('CSV export complete.');
        });
    ```
-   The group will emit *end* event when all of its pumps completed their jobs. It is also possible
-   to get a promise for that (`.whenFinished()`).
+   The `.whenFinished()` method returns a promise that resolves when the pump finishd.
 
 ## Pump
 A pump reads data from its input buffer or stream and copies it to the output buffer by default:
