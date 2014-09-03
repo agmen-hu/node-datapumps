@@ -166,7 +166,9 @@ class Pump extends EventEmitter
     @
 
   whenFinished: ->
-    return new Promise (resolve) =>
+    return Promise.resolve() if @isEnded()
+
+    new Promise (resolve) =>
       @on 'end', ->
         resolve()
 
