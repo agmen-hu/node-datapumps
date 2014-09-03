@@ -13,21 +13,19 @@ $ npm install datapumps --save
  * Create a group:
    ```js
    var datapumps = require('datapumps');
-   var pumpGroup = datapumps.group();
    ```
 
  * Create a pump that loads the data from mysql:
    ```js
-   pumpGroup.addPump('customers')
-     .from(mysqlConnection.query('SELECT id,last_name,first_name FROM customer').stream({highWaterMark: 5}));
+   var pump = new datapumps.Pump()
+   pump.from(mysqlConnection.query('SELECT id,last_name,first_name FROM customer').stream());
    ```
    This pump will read the query results into a buffer. The pump controls the data flow, i.e.
    it pauses read of query results when buffer is full.
 
- * Create a pump that writes the data to csv:
+ * Write data to csv with csvWriterMixin:
    ```js
-   pumpGroup.addPump('csvWriter')
-     .from(pumpGroup.pump('customers').buffer())
+   pump
      .mixin(datapumps.mixin.CsvWriterMixin({
        path: 'test.csv',
        headers: [ 'Id', 'First Name', 'Last Name' ]
@@ -36,24 +34,24 @@ $ npm install datapumps --save
        this.writeRow([ customer.id, customer.first_name, customer.last_name ]);
      });
    ```
-   `.from` indicates that the pump will load data from the buffer of *customers* pump. The
-   `CsvWriterMixin` extends the functionality of the pump, it creates csv file with given
-   headers and adds the `.writeRow` method to the pump. Finally, the `.process` method
+   The `CsvWriterMixin` extends the functionality of the pump, it creates csv file with given
+   headers and adds the `.writeRow` method to the pump. The `.process` method
    (which copies data to the output buffer by default) is overridden with writing rows to the csv.
 
- * Register a listener for `end` event and `.start()` the pump:
+ * Start to pump and log when its finished:
    ```js
-   pumpGroup
-     .on('end', function() {
-       console.log('CSV export complete.');
-     })
-     .start();
+   pump
+     .start()
+     .whenFinished()
+       .then(function() {
+         console.log('CSV export complete.');
+       });
    ```
    The group will emit *end* event when all of its pumps completed their jobs. It is also possible
    to get a promise for that (`.whenFinished()`).
 
 ## Pump
-A pump reads data from its input and copies it to the output buffer by default:
+A pump reads data from its input buffer or stream and copies it to the output buffer by default:
 ```js
 datapumps = require('datapumps');
 (pump = new datapumps.Pump())
@@ -68,12 +66,12 @@ buffer = pump.buffer(); // equivalent with previous as the default buffer
                         // of the pump is called 'output'
 ```
 
-Use the `.buffers()` method when you need multiple buffers:
+Use the `.buffers()` method when you need to write data into multiple output buffers:
 ```js
 ticketsPump
   .buffers({
-    openTickets: pump.createBuffer(),
-    closedTickets: pump.createBuffer(),
+    openTickets: ticketsPump.createBuffer(),
+    closedTickets: ticketsPump.createBuffer(),
   });
 
 reminderMailer = new datapumps.Pump()
@@ -81,7 +79,7 @@ reminderMailer
   .from(ticketPump.buffer('openTickets'))
   ...
 ```
-Note that the *tickets* pump has two output buffers: *openTickets* and *closedTickets*. The *reminderMailer* pump
+Note that the *ticketsPump* pump has two output buffers: *openTickets* and *closedTickets*. The *reminderMailer* pump
 reads data from the *openTickets* buffer of the *tickets* pump.
 
 ### Transforming data
