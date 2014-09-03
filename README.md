@@ -10,11 +10,6 @@ $ npm install datapumps --save
 ```
 
 ## Usage example: csv export from mysql
- * Create a group:
-   ```js
-   var datapumps = require('datapumps');
-   ```
-
  * Create a pump that loads the data from mysql:
    ```js
    var pump = new datapumps.Pump()
