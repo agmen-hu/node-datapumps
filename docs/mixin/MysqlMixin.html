@@ -48,6 +48,11 @@
                 ObjectTransformMixin.coffee
               </a>
             
+              
+              <a class="source" href="index.html">
+                index.coffee
+              </a>
+            
           </div>
         </li>
       </ul>
@@ -68,12 +73,57 @@
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-1">&#182;</a>
               </div>
-              
+              <p>Mixin to query and write data to mysql.</p>
+<p>Please note that you don’t need this mixin when you only want to read data from mysql. Use the
+<code>.stream()</code> method of connection query.</p>
+<p>Usage:</p>
+<ul>
+<li><p>Load the mixin:</p>
+<pre><code class="lang-coffee">{ MysqlMixin } = <span class="hljs-built_in">require</span>(<span class="hljs-string">'datapumps/mixins'</span>)
+</code></pre>
+</li>
+<li><p>Add the mixin and set the mysql connection:</p>
+<pre><code class="lang-coffee">pump
+  .mixin MysqlMixin myMysqlConnection
+</code></pre>
+</li>
+<li><p>Use the <code>.query()</code> method of the pump in <code>.process()</code></p>
+<pre><code class="lang-coffee">pump
+  .process <span class="hljs-function"><span class="hljs-params">(data)</span> -&gt;</span>
+    <span class="hljs-property">@query</span> <span class="hljs-string">'INSERT INTO customer (name, address) VALUES (?)'</span>, [ data.name, data.address ]
+</code></pre>
+<p>Please note that the <code>.query()</code> method returns a promise (it is the promisified version of
+<code>connection.query()</code>).</p>
+</li>
+</ul>
+<p>Complete example: Copy data from one table to another</p>
+<pre><code class="lang-coffee">{ Pump, <span class="hljs-attribute">mixin</span>: { MysqlMixin } } = <span class="hljs-built_in">require</span>(<span class="hljs-string">'datapumps'</span>)
+mysqlConnection = <span class="hljs-built_in">require</span>(<span class="hljs-string">'mysql'</span>).createConnection &lt;your-connection-string&gt;
+
+mysqlCopy = <span class="hljs-keyword">new</span> Pump
+  .from mysqlConnection.query(<span class="hljs-string">'SELECT id,last_name,first_name FROM customer'</span>).stream()
+  .mixin MysqlMixin mysqlConnection
+  .process <span class="hljs-function"><span class="hljs-params">(customer)</span> -&gt;</span>
+    <span class="hljs-property">@query</span> <span class="hljs-string">'SELECT id FROM new_customer_table WHERE id = ? '</span>, p.id
+      .<span class="hljs-keyword">then</span> <span class="hljs-function"><span class="hljs-params">([ result, fields ])</span> =&gt;</span>
+        <span class="hljs-keyword">if</span> result.length == <span class="hljs-number">0</span>
+          <span class="hljs-property">@query</span> <span class="hljs-string">'INSERT INTO new_customer_table
+            (id,last_name,first_name) VALUES (?)'</span>,
+            [ customer.id, customer.last_name, customer.first_name ]
+        <span class="hljs-keyword">else</span>
+          <span class="hljs-property">@query</span> <span class="hljs-string">'UPDATE new_customer_table
+            SET last_name=?, first_name = ?
+            WHERE id=?'</span>,
+            customer.last_name, customer.first_name, customer.id
+</code></pre>
+
             </div>
             
             <div class="content"><div class='highlight'><pre>Promise = <span class="hljs-built_in">require</span>(<span class="hljs-string">'bluebird'</span>)
 
 <span class="hljs-function"><span class="hljs-title">mysqlMixin</span> = <span class="hljs-params">(connection)</span> -&gt;</span>
+  <span class="hljs-keyword">if</span> !connection? <span class="hljs-keyword">or</span> <span class="hljs-keyword">typeof</span>(connection?.query) != <span class="hljs-string">'function'</span>
+    <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> Error <span class="hljs-string">'Mysql mixin requires connection to be given'</span>
   <span class="hljs-function"><span class="hljs-params">(target)</span> -&gt;</span>
     target._mysql =
       <span class="hljs-attribute">connection</span>: connection
