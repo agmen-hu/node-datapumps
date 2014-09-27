@@ -97,6 +97,7 @@ class Pump extends EventEmitter
         @_processing = @_process data, @
       .catch(Promise.CancellationError, ->)
       .catch (err) =>
+        return if @_errorBuffer.isFull()
         @_errorBuffer.write
           message: err
           pump: @_id
