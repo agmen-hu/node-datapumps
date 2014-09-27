@@ -12,3 +12,8 @@ describe 'MysqlMixin(connection)', ->
     mixin target
 
     target._mysql.connection.should.equal = connection
+
+  it 'should throw error when connection is not given', ->
+    ( ->
+      MysqlMixin()
+    ).should.throw('Mysql mixin requires connection to be given')
