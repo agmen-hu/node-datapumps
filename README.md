@@ -42,7 +42,7 @@ $ npm install datapumps --save
          console.log('CSV export complete.');
        });
    ```
-   The `.whenFinished()` method returns a promise that resolves when the pump finishd.
+   The `.whenFinished()` method returns a promise that resolves when the pump finished.
 
 ## Pump
 A pump reads data from its input buffer or stream and copies it to the output buffer by default:
