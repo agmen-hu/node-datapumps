@@ -15,21 +15,21 @@
   "bugs": {
     "url": "https://github.com/agmen-hu/node-datapumps/issues"
   },
-  "version": "0.3.8",
+  "version": "0.3.9",
   "dependencies": {
     "bluebird": "^2.2.2",
     "coffee-script": "^1.7.1",
     "excel4node": "~0.0.9",
-    "fast-csv": "~0.4.2",
+    "fast-csv": "~0.5.2",
     "mongodb": "^1.4.9",
-    "mysql": "~2.4.2",
+    "mysql": "~2.5.1",
     "xlsx": "~0.7.8"
   },
   "devDependencies": {
     "grunt": "~0.4.1",
     "grunt-cafe-mocha": "~0.1.12",
-    "grunt-contrib-coffee": "~0.10.1",
-    "grunt-contrib-watch": "~0.3.1",
+    "grunt-contrib-coffee": "~0.11.1",
+    "grunt-contrib-watch": "~0.6.1",
     "mocha": "~1.21.3",
     "should": "~4.0.4",
     "sinon": "~1.10.3"
