@@ -154,7 +154,7 @@ class Pump extends EventEmitter
   pause: ->
     return if @_state == Pump.PAUSED
     throw new Error 'Cannot .pause() a pump that is not running' if @_state != Pump.STARTED
-    if @_processing?.isPending()
+    if @_processing? and Promise.resolve(@_processing).isPending()
       @_processing.then => @_state = Pump.PAUSED
     else
       @_state = Pump.PAUSED
