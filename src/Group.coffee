@@ -21,6 +21,7 @@ class Group extends EventEmitter
     @_pumps[name] = pump ? new Pump
     pumpId = if @_id? then "#{@_id}/#{name}" else name
     @_pumps[name].id pumpId
+    @_pumps[name].errorBuffer @_errorBuffer
     @_pumps[name]
 
   pump: (name) ->
