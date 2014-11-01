@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>RestMixin.coffee</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+    
+      <ul id="jump_to">
+        <li>
+          <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
+          <a class="small" href="javascript:void(0);">+</a>
+          <div id="jump_wrapper">
+          <div id="jump_page">
+            
+              
+              <a class="source" href="CsvWriterMixin.html">
+                CsvWriterMixin.coffee
+              </a>
+            
+              
+              <a class="source" href="ExcelReaderMixin.html">
+                ExcelReaderMixin.coffee
+              </a>
+            
+              
+              <a class="source" href="ExcelWriterMixin.html">
+                ExcelWriterMixin.coffee
+              </a>
+            
+              
+              <a class="source" href="MongodbMixin.html">
+                MongodbMixin.coffee
+              </a>
+            
+              
+              <a class="source" href="MysqlMixin.html">
+                MysqlMixin.coffee
+              </a>
+            
+              
+              <a class="source" href="ObjectTransformMixin.html">
+                ObjectTransformMixin.coffee
+              </a>
+            
+              
+              <a class="source" href="RestMixin.html">
+                RestMixin.coffee
+              </a>
+            
+              
+              <a class="source" href="index.html">
+                index.coffee
+              </a>
+            
+          </div>
+        </li>
+      </ul>
+    
+    <ul class="sections">
+        
+          <li id="title">
+              <div class="annotation">
+                  <h1>RestMixin.coffee</h1>
+              </div>
+          </li>
+        
+        
+        
+        <li id="section-1">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>
+              <p>Mixin to interact with REST services.</p>
+<p>This mixin wraps and promisifies the restler library methods, like .get(), .post() or
+.del(). For more details about restler see <a href="https://github.com/danwrong/restler">https://github.com/danwrong/restler</a>.</p>
+<p>Use case 1: filling pump from result of rest GET</p>
+<pre><code class="lang-coffee">{ RestMixin } = <span class="hljs-built_in">require</span>(<span class="hljs-string">'datapumps/mixins'</span>)
+pump
+  .mixin RestMixin
+  .from pump.createBuffer()
+  .get <span class="hljs-string">'http://someservice.io/api/v1/users'</span>
+    .<span class="hljs-keyword">then</span> <span class="hljs-function"><span class="hljs-params">(users)</span> =&gt;</span>
+      pump.from().write user <span class="hljs-keyword">for</span> user <span class="hljs-keyword">in</span> users
+      <span class="hljs-comment"># call .get to read more, seal the input buffer otherwise.</span>
+      pump.from().seal()
+pump
+  .process <span class="hljs-function"><span class="hljs-params">(user)</span> -&gt;</span>
+    <span class="hljs-comment"># ...</span>
+</code></pre>
+<p>Use case 2: enriching content from result of rest GET</p>
+<pre><code class="lang-coffee">{ RestMixin } = <span class="hljs-built_in">require</span>(<span class="hljs-string">'datapumps/mixins'</span>)
+pump
+  .mixin RestMixin
+  .process <span class="hljs-function"><span class="hljs-params">(data)</span> =&gt;</span>
+    <span class="hljs-property">@get</span> <span class="hljs-string">'http://someservice.io/api/v1/user/'</span> + data.username
+      .<span class="hljs-keyword">then</span> <span class="hljs-function"><span class="hljs-params">(user)</span> =&gt;</span>
+        data.email = user.email
+        <span class="hljs-property">@copy</span> data
+</code></pre>
+<p>Use case 3: output to a REST service</p>
+<pre><code class="lang-coffee">{ RestMixin } = <span class="hljs-built_in">require</span>(<span class="hljs-string">'datapumps/mixins'</span>)
+pump
+  .mixin RestMixin
+  .process <span class="hljs-function"><span class="hljs-params">(data)</span> -&gt;</span>
+    <span class="hljs-property">@post</span> <span class="hljs-string">'https://twaud.io/api/v1/upload.json'</span>,
+      <span class="hljs-attribute">multipart</span>: <span class="hljs-literal">true</span>
+      <span class="hljs-attribute">username</span>: <span class="hljs-string">'danwrong'</span>
+      <span class="hljs-attribute">password</span>: <span class="hljs-string">'wouldntyouliketoknow'</span>
+      <span class="hljs-attribute">data</span>:
+        <span class="hljs-string">'sound[message]'</span>: <span class="hljs-string">'hello from restler!'</span>
+        <span class="hljs-string">'sound[file]'</span>: <span class="hljs-property">@file</span>(<span class="hljs-string">'doug-e-fresh_the-show.mp3'</span>, <span class="hljs-literal">null</span>, <span class="hljs-number">321567</span>, <span class="hljs-literal">null</span>, <span class="hljs-string">'audio/mpeg'</span>)
+</code></pre>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>Promise = <span class="hljs-built_in">require</span> <span class="hljs-string">'bluebird'</span>
+restler = <span class="hljs-built_in">require</span> <span class="hljs-string">'restler'</span>
+
+<span class="hljs-built_in">module</span>.exports = <span class="hljs-function"><span class="hljs-title">RestMixin</span> = <span class="hljs-params">(target)</span> -&gt;</span>
+  _wrapMethod target, <span class="hljs-string">'get'</span>
+  _wrapMethod target, <span class="hljs-string">'post'</span>
+  _wrapMethod target, <span class="hljs-string">'put'</span>
+  _wrapMethod target, <span class="hljs-string">'del'</span>
+  _wrapMethod target, <span class="hljs-string">'head'</span>
+  _wrapMethod target, <span class="hljs-string">'patch'</span>
+  _wrapMethod target, <span class="hljs-string">'json'</span>
+  _wrapMethod target, <span class="hljs-string">'postJson'</span>
+  _wrapMethod target, <span class="hljs-string">'putJson'</span>
+  target.<span class="hljs-function"><span class="hljs-title">file</span> = -&gt;</span>
+    restler.file.apply restler, arguments
+
+<span class="hljs-function"><span class="hljs-title">_wrapMethod</span> = <span class="hljs-params">(target, methodName)</span> -&gt;</span>
+  target[methodName] =<span class="hljs-function"> -&gt;</span>
+    methodArgs = arguments
+    <span class="hljs-keyword">new</span> Promise <span class="hljs-function"><span class="hljs-params">(resolve, reject)</span> -&gt;</span>
+      restler[methodName].apply(restler, methodArgs)
+        .<span class="hljs-literal">on</span> <span class="hljs-string">'complete'</span>, <span class="hljs-function"><span class="hljs-params">(result)</span> -&gt;</span>
+          <span class="hljs-keyword">if</span> result <span class="hljs-keyword">instanceof</span> Error
+            reject result
+          <span class="hljs-keyword">else</span>
+            resolve result</pre></div></div>
+            
+        </li>
+        
+    </ul>
+  </div>
+</body>
+</html>
