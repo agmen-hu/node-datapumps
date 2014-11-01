@@ -5,3 +5,4 @@ module.exports =
   ExcelWriterMixin: require './ExcelWriterMixin'
   MysqlMixin: require './MysqlMixin'
   MongodbMixin: require './MongodbMixin'
+  RestMixin: require './RestMixin'

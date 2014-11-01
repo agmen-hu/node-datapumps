@@ -15,7 +15,7 @@
   "bugs": {
     "url": "https://github.com/agmen-hu/node-datapumps/issues"
   },
-  "version": "0.3.10",
+  "version": "0.3.11",
   "dependencies": {
     "bluebird": "^2.2.2",
     "coffee-script": "^1.7.1",
@@ -23,7 +23,8 @@
     "fast-csv": "~0.5.2",
     "mongodb": "^1.4.9",
     "mysql": "~2.5.1",
-    "xlsx": "~0.7.8"
+    "xlsx": "~0.7.8",
+    "restler": "~3.2.2"
   },
   "devDependencies": {
     "grunt": "~0.4.1",
@@ -43,6 +44,7 @@
     "export",
     "batch",
     "excel",
-    "xlsx"
+    "xlsx",
+    "rest"
   ]
 }
