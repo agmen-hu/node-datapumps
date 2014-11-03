@@ -3,7 +3,7 @@ Promise = require('bluebird')
 Pump = require('./Pump')
 Buffer = require('./Buffer')
 
-class Group extends EventEmitter
+module.exports = class Group extends EventEmitter
   @STOPPED: 0
   @STARTED: 1
   @PAUSED: 2
@@ -159,4 +159,18 @@ class Group extends EventEmitter
     pump.id "#{@_id}/#{name}" for name, pump of @_pumps
     @
 
-module.exports = Group
+  logErrorsToConsole: ->
+    @whenFinished()
+      .then =>
+        if !@errorBuffer().isEmpty()
+          console.log 'Errors during processing:'
+          for error in @errorBuffer().getContent()
+            name = error.pump ? '(root)'
+            console.log " - In pump #{name}: #{error.message}"
+    @
+
+  writeError: (err) ->
+    @_errorBuffer.write
+      message: err
+      pump: @_id
+    @

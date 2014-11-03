@@ -2,7 +2,7 @@ EventEmitter = require('events').EventEmitter
 Promise = require('bluebird')
 Buffer = require('./Buffer')
 
-class Pump extends EventEmitter
+module.exports = class Pump extends EventEmitter
   @STOPPED: 0
   @STARTED: 1
   @PAUSED: 2
@@ -34,15 +34,19 @@ class Pump extends EventEmitter
         size: 1000
       buffer.on 'data', (data) => @_from.write data
       buffer.on 'end', => @_from.seal()
-      buffer.on 'error', (err) => @_errorBuffer.write
-        message: err
-        pump: @_id
+      buffer.on 'error', (err) => @writeError err
       @_from.on 'full', -> buffer.pause()
       @_from.on 'release', -> buffer.resume()
     else
       throw new Error 'Argument must be datapumps.Buffer or stream'
 
     @_from.on 'end', => do @sourceEnded
+    @
+
+  writeError: (err) ->
+    @_errorBuffer.write
+      message: err
+      pump: @_id
     @
 
   sourceEnded: ->
@@ -173,4 +177,12 @@ class Pump extends EventEmitter
       @on 'end', ->
         resolve()
 
-module.exports = Pump
+  logErrorsToConsole: ->
+    @whenFinished()
+      .then =>
+        if !@errorBuffer().isEmpty()
+          console.log 'Errors during processing:'
+          for error in @errorBuffer().getContent()
+            name = error.pump ? '(root)'
+            console.log " - In pump #{name}: #{error.message}"
+    @

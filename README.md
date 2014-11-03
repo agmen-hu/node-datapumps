@@ -189,6 +189,14 @@ group
     });
 ```
 
+You can use the `.logErrorsToConsole()` helper method will configure the pump or group to print
+errors when processing finished:
+```js
+group
+  .logErrorsToConsole()
+  .start();
+```
+
 ### Debugging
 The following example shows a fingers-crossed type logging, i.e. debug logging is turned on
 after the first error occured:
