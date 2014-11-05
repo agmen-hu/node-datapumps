@@ -81,20 +81,40 @@
               <p>Mixin to interact with REST services.</p>
 <p>This mixin wraps and promisifies the restler library methods, like .get(), .post() or
 .del(). For more details about restler see <a href="https://github.com/danwrong/restler">https://github.com/danwrong/restler</a>.</p>
+<p>It also adds <code>.fromRest</code> method to pump, which fills input buffer from results of a REST service
+query.</p>
 <p>Use case 1: filling pump from result of rest GET</p>
 <pre><code class="lang-coffee">{ RestMixin } = <span class="hljs-built_in">require</span>(<span class="hljs-string">'datapumps/mixins'</span>)
 pump
   .mixin RestMixin
-  .from pump.createBuffer()
-  .get <span class="hljs-string">'http://someservice.io/api/v1/users'</span>
-    .<span class="hljs-keyword">then</span> <span class="hljs-function"><span class="hljs-params">(users)</span> =&gt;</span>
-      pump.from().write user <span class="hljs-keyword">for</span> user <span class="hljs-keyword">in</span> users
-      <span class="hljs-comment"># call .get to read more, seal the input buffer otherwise.</span>
-      pump.from().seal()
-pump
+  .fromRest
+    <span class="hljs-attribute">query</span>:<span class="hljs-function"> -&gt;</span> <span class="hljs-property">@get</span> <span class="hljs-string">'http://someservice.io/api/v1/users'</span>
+    <span class="hljs-attribute">resultMapping</span>: <span class="hljs-function"><span class="hljs-params">(result)</span> -&gt;</span> result.users
   .process <span class="hljs-function"><span class="hljs-params">(user)</span> -&gt;</span>
     <span class="hljs-comment"># ...</span>
 </code></pre>
+<p><code>.fromRest()</code> has an object argument. The <code>query</code> key is required, it must be a callback function
+which returns a promise that fulfills when the query is completed and returns with the query
+results. The query results must be an array. Most of the times, <code>.get()</code> or <code>.post()</code> method will
+be sufficient combined with mapping of query results (<code>resultMapping</code> key).</p>
+<p>Use <code>resultMapping</code> key when you need to map a results of the REST service to an array. The value
+of the key should be a function that receives REST query result in the first argument and returns
+array to be filled in the input buffer.</p>
+<p>REST service may be paginated, you can query those like this:</p>
+<pre><code class="lang-js">pump
+  .mixin RestMixin
+  .fromRest
+    query: (nextPage) -&gt; @get nextPage ? <span class="hljs-string">'http://someservice.io/api/v1/users'</span>
+    resultMapping: (result) -&gt; result.users
+    nextPage: (result) -&gt; result.paging.nextPage
+</code></pre>
+<p>Only two things to note when using paginated REST service:</p>
+<ul>
+<li><code>nextPage</code> key is a callback which may return anything other than undefined or null to continue
+to next page.</li>
+<li><code>query</code> will receive the return value of <code>nextPage</code> callback. It will receive undefined on the
+first call.</li>
+</ul>
 <p>Use case 2: enriching content from result of rest GET</p>
 <pre><code class="lang-coffee">{ RestMixin } = <span class="hljs-built_in">require</span>(<span class="hljs-string">'datapumps/mixins'</span>)
 pump
@@ -136,6 +156,24 @@ restler = <span class="hljs-built_in">require</span> <span class="hljs-string">'
   _wrapMethod target, <span class="hljs-string">'putJson'</span>
   target.<span class="hljs-function"><span class="hljs-title">file</span> = -&gt;</span>
     restler.file.apply restler, arguments
+
+  target.<span class="hljs-function"><span class="hljs-title">fromRest</span> = <span class="hljs-params">(config)</span> -&gt;</span>
+    <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> Error <span class="hljs-string">'query key is required'</span> <span class="hljs-keyword">if</span> !config?.query
+    config.resultMapping ?= <span class="hljs-function"><span class="hljs-params">(result)</span> -&gt;</span> result
+    config.nextPage ?=<span class="hljs-function"> -&gt;</span> <span class="hljs-literal">undefined</span>
+    <span class="hljs-property">@from</span> <span class="hljs-property">@createBuffer</span>()
+    <span class="hljs-function"><span class="hljs-title">queryAndWriteInputBuffer</span> = <span class="hljs-params">(nextPage)</span> =&gt;</span>
+      config.query.apply @, [ nextPage ]
+        .<span class="hljs-keyword">then</span> <span class="hljs-function"><span class="hljs-params">(result)</span> =&gt;</span>
+          <span class="hljs-property">@from</span>().writeArrayAsync(config.resultMapping(result) )
+            .done<span class="hljs-function"> =&gt;</span>
+              nextPage = config.nextPage(result)
+              <span class="hljs-keyword">if</span> (nextPage <span class="hljs-keyword">is</span> <span class="hljs-literal">undefined</span>) <span class="hljs-keyword">or</span> (nextPage <span class="hljs-keyword">is</span> <span class="hljs-literal">null</span>)
+                <span class="hljs-property">@from</span>().seal()
+              <span class="hljs-keyword">else</span>
+                queryAndWriteInputBuffer(nextPage)
+    queryAndWriteInputBuffer(<span class="hljs-literal">undefined</span>)
+    @
 
 <span class="hljs-function"><span class="hljs-title">_wrapMethod</span> = <span class="hljs-params">(target, methodName)</span> -&gt;</span>
   target[methodName] =<span class="hljs-function"> -&gt;</span>
