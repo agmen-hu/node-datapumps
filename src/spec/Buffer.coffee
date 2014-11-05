@@ -59,6 +59,32 @@ describe 'Buffer', ->
       promise = buffer.writeAsync 'test'
       promise.should.be.an.instanceOf(Promise)
 
+  describe '#writeArrayAsync(dataArray)', ->
+    it 'should write every item from dataArray to the buffer', (done) ->
+      buffer = new Buffer
+
+      promise = buffer.writeArrayAsync ['foo', 'bar']
+      promise.then ->
+        done() if buffer.getContent().should.eql ['foo', 'bar']
+
+    it 'should return a promise that fulfills when the last item of the array is written', (done) ->
+      buffer = new Buffer
+        size: 1
+
+      fooIsWritten = fooIsReleased = barIsWritten = false
+      buffer.on 'write', (data) ->
+        if data == 'foo'
+          fooIsWritten = true
+          buffer.read()
+        barIsWritten = true if data == 'bar'
+
+      buffer.on 'release', (data) ->
+        fooIsReleased = true if data == 'foo'
+
+      promise = buffer.writeArrayAsync ['foo', 'bar']
+      promise.then ->
+        done() if fooIsWritten and fooIsReleased and barIsWritten
+
   describe '#read()', ->
     it 'should return first data item when not empty', ->
       buffer = new Buffer

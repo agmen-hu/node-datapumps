@@ -38,6 +38,11 @@ class Buffer extends EventEmitter
         @once 'release', =>
           resolve @writeAsync data
 
+  writeArrayAsync: (dataArray) ->
+    first = dataArray.shift()
+    @writeAsync first
+      .then => @writeArrayAsync dataArray if dataArray.length > 0
+
   read: ->
     throw new Error('Buffer is empty') if @isEmpty()
     result = @content.shift()
