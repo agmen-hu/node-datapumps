@@ -102,7 +102,9 @@ ExcelWriterMixin = (onMixin) ->
     # Writes a new row in the worksheet. See usage example at the top.
     target.writeRow = (columns) ->
       throw new Error 'Use createWorksheet before writing rows' if !@_excel.worksheet?
-      @_excel.worksheet.Cell(@_excel.currentRow, index + 1).String(value) for value, index in columns
+      for value, index in columns
+        throw new Error "Null or undefined value written to cell #{@_excel.currentRow}:#{index + 1}" if value is null or value is undefined
+        @_excel.worksheet.Cell(@_excel.currentRow, index + 1).String(value)
       @_excel.currentRow++
 
     onMixin.apply(target, [ target ])

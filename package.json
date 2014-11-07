@@ -15,7 +15,7 @@
   "bugs": {
     "url": "https://github.com/agmen-hu/node-datapumps/issues"
   },
-  "version": "0.3.13",
+  "version": "0.3.14",
   "dependencies": {
     "bluebird": "^2.2.2",
     "coffee-script": "^1.7.1",
