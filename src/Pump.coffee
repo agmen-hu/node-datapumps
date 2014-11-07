@@ -44,6 +44,7 @@ module.exports = class Pump extends EventEmitter
     @
 
   writeError: (err) ->
+    return if @_errorBuffer.isFull()
     @_errorBuffer.write
       message: err
       pump: @_id
