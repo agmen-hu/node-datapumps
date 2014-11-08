@@ -39,3 +39,17 @@ describe 'BatchMixin', ->
           processCallback.calledOnce.should.be.true
           processCallback.getCall(0).args[0].should.eql [ 'foo', 'bar', 'yeehaa' ]
           done()
+
+  it 'should not call .processBatch for empty inputs', (done) ->
+    processCallback = sinon.spy()
+
+    (pump = new Pump)
+      .mixin BatchMixin
+      .from pump.createBuffer
+        sealed: true
+      .processBatch processCallback
+      .start()
+      .whenFinished()
+        .then =>
+          processCallback.called.should.be.false
+          done()

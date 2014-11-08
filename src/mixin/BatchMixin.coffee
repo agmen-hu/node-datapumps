@@ -54,8 +54,11 @@ module.exports = BatchProcessMixin = (target) ->
   pumpMethod = target._pump
   target._pump = ->
     if @_from.isEnded()
-      Promise.resolve(@_processBatch(@_batch))
-        .then => @sealOutputBuffers()
+      if @_batch.length > 0
+        Promise.resolve(@_processBatch(@_batch))
+          .then => @sealOutputBuffers()
+      else
+        @sealOutputBuffers()
       @_batch = []
       return
 
