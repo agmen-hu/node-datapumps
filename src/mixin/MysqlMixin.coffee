@@ -15,14 +15,21 @@
 #      .mixin MysqlMixin myMysqlConnection
 #    ```
 #
-#  * Use the `.query()` method of the pump in `.process()`
+#  * Use `.query()` method of the pump in `.process()`
 #    ```coffee
 #    pump
 #      .process (data) ->
 #        @query 'INSERT INTO customer (name, address) VALUES (?)', [ data.name, data.address ]
 #    ```
-#    Please note that the `.query()` method returns a promise (it is the promisified version of
-#    `connection.query()`).
+#    The method returns a promise (it is the promisified version of `connection.query()`), so
+#    you can use it `.process()` callbacks (note that `.process()` callback must return a promise).
+#
+#  * Use `.escape(value)` to escape value when query is built by concatenating strings
+#    ```coffee
+#    pump
+#      .process (data) ->
+#        @query 'INSERT INTO customer (name) VALUES (#{@escape(data.name)})'
+#    ```
 #
 # Complete example: Copy data from one table to another
 # ```coffee
@@ -71,5 +78,8 @@ mysqlMixin = (connection) ->
             Promise.reject('Query returned no result')
           else
             Promise.reject('Query returned more than one result')
+
+    target.escape = (value) ->
+      @_mysql.connection.escape value
 
 module.exports = mysqlMixin
