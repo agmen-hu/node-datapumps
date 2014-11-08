@@ -53,3 +53,10 @@ describe 'BatchMixin', ->
         .then =>
           processCallback.called.should.be.false
           done()
+
+  it 'should not allow setting batch size to zero or less', ->
+    ( ->
+      (pump = new Pump)
+        .mixin BatchMixin
+        .batchSize 0
+    ).should.throw 'Invalid batch size: 0'

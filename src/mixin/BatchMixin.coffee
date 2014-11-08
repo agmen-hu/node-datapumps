@@ -35,6 +35,7 @@ module.exports = BatchProcessMixin = (target) ->
 
   target.batchSize = (size) ->
     return @_batchSize if !size?
+    throw new Error "Invalid batch size: #{size}" if size <= 1
     @_batchSize = size
     @
 
