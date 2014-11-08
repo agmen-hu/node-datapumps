@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>BatchMixin.coffee</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+    
+      <ul id="jump_to">
+        <li>
+          <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
+          <a class="small" href="javascript:void(0);">+</a>
+          <div id="jump_wrapper">
+          <div id="jump_page">
+            
+              
+              <a class="source" href="BatchMixin.html">
+                BatchMixin.coffee
+              </a>
+            
+              
+              <a class="source" href="CsvWriterMixin.html">
+                CsvWriterMixin.coffee
+              </a>
+            
+              
+              <a class="source" href="ExcelReaderMixin.html">
+                ExcelReaderMixin.coffee
+              </a>
+            
+              
+              <a class="source" href="ExcelWriterMixin.html">
+                ExcelWriterMixin.coffee
+              </a>
+            
+              
+              <a class="source" href="MongodbMixin.html">
+                MongodbMixin.coffee
+              </a>
+            
+              
+              <a class="source" href="MysqlMixin.html">
+                MysqlMixin.coffee
+              </a>
+            
+              
+              <a class="source" href="ObjectTransformMixin.html">
+                ObjectTransformMixin.coffee
+              </a>
+            
+              
+              <a class="source" href="RestMixin.html">
+                RestMixin.coffee
+              </a>
+            
+              
+              <a class="source" href="index.html">
+                index.coffee
+              </a>
+            
+          </div>
+        </li>
+      </ul>
+    
+    <ul class="sections">
+        
+          <li id="title">
+              <div class="annotation">
+                  <h1>BatchMixin.coffee</h1>
+              </div>
+          </li>
+        
+        
+        
+        <li id="section-1">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>
+              <p>Mixin that makes pump process its input in batches</p>
+<p>This mixin adds <code>.processBatch</code> method, which enables configuration of batch processing
+callback. The callback receives the array of items in the batch and must return a promise
+when the batch is fully processed.</p>
+<p>Usage example: insert into mysql in batches</p>
+<pre><code class="lang-coffee">{ BatchMixin, MysqlMixin } = <span class="hljs-built_in">require</span>(<span class="hljs-string">'datapumps/mixins'</span>)
+pump
+  .mixin BatchMixin
+  .mixin MysqlMixin mysqlConnection
+  .processBatch <span class="hljs-function"><span class="hljs-params">(users)</span> -&gt;</span>
+     query = <span class="hljs-string">'INSERT INTO user (name, email) VALUES '</span>
+     query += users.map <span class="hljs-function"><span class="hljs-params">(user)</span> =&gt;</span>
+         <span class="hljs-string">"(<span class="hljs-subst">#{<span class="hljs-property">@escape</span>(user.name)}</span>, <span class="hljs-subst">#{<span class="hljs-property">@escape</span>(user.email)}</span>)"</span>
+       .join(<span class="hljs-string">','</span>)
+
+     <span class="hljs-property">@query</span> query
+</code></pre>
+<p>The default batch size is 100 items. It is possible to set or get the batch size using
+<code>.batchSize()</code> method:</p>
+<pre><code class="lang-coffee">pump.batchSize() <span class="hljs-comment"># returns 100</span>
+pump.batchSize(<span class="hljs-number">10000</span>) <span class="hljs-comment"># chainable setter to batch size</span>
+pump.batchSize() <span class="hljs-comment"># return 10000</span>
+</code></pre>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>Promise = <span class="hljs-built_in">require</span> <span class="hljs-string">'bluebird'</span>
+
+<span class="hljs-built_in">module</span>.exports = <span class="hljs-function"><span class="hljs-title">BatchProcessMixin</span> = <span class="hljs-params">(target)</span> -&gt;</span>
+  target._batchSize = <span class="hljs-number">100</span>
+  target._batch = []
+
+  target.<span class="hljs-function"><span class="hljs-title">batchSize</span> = <span class="hljs-params">(size)</span> -&gt;</span>
+    <span class="hljs-keyword">return</span> <span class="hljs-property">@_batchSize</span> <span class="hljs-keyword">if</span> !size?
+    <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> Error <span class="hljs-string">"Invalid batch size: <span class="hljs-subst">#{size}</span>"</span> <span class="hljs-keyword">if</span> size &lt;= <span class="hljs-number">1</span>
+    <span class="hljs-property">@_batchSize</span> = size
+    @
+
+  target.<span class="hljs-function"><span class="hljs-title">processBatch</span> = <span class="hljs-params">(fn)</span> -&gt;</span>
+    <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> Error(<span class="hljs-string">'processBatch argument must be a function'</span>) <span class="hljs-keyword">if</span> <span class="hljs-keyword">typeof</span> fn != <span class="hljs-string">'function'</span>
+    <span class="hljs-property">@_processBatch</span> = fn
+    @
+
+  target.<span class="hljs-function"><span class="hljs-title">_process</span> = <span class="hljs-params">(data)</span> -&gt;</span>
+    <span class="hljs-property">@_batch</span>.push data
+
+    <span class="hljs-keyword">if</span> <span class="hljs-property">@_batch</span>.length &gt;= <span class="hljs-property">@_batchSize</span>
+      result = <span class="hljs-property">@_processBatch</span>(<span class="hljs-property">@_batch</span>)
+      <span class="hljs-property">@_batch</span> = []
+      result
+
+  pumpMethod = target._pump
+  target.<span class="hljs-function"><span class="hljs-title">_pump</span> = -&gt;</span>
+    <span class="hljs-keyword">if</span> <span class="hljs-property">@_from</span>.isEnded()
+      <span class="hljs-keyword">if</span> <span class="hljs-property">@_batch</span>.length &gt; <span class="hljs-number">0</span>
+        Promise.resolve(<span class="hljs-property">@_processBatch</span>(<span class="hljs-property">@_batch</span>))
+          .<span class="hljs-keyword">then</span><span class="hljs-function"> =&gt;</span> <span class="hljs-property">@sealOutputBuffers</span>()
+      <span class="hljs-keyword">else</span>
+        <span class="hljs-property">@sealOutputBuffers</span>()
+      <span class="hljs-property">@_batch</span> = []
+      <span class="hljs-keyword">return</span>
+
+    pumpMethod.apply target, []</pre></div></div>
+            
+        </li>
+        
+    </ul>
+  </div>
+</body>
+</html>

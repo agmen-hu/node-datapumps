@@ -19,6 +19,11 @@
           <div id="jump_page">
             
               
+              <a class="source" href="BatchMixin.html">
+                BatchMixin.coffee
+              </a>
+            
+              
               <a class="source" href="CsvWriterMixin.html">
                 CsvWriterMixin.coffee
               </a>
@@ -92,13 +97,19 @@
   .mixin MysqlMixin myMysqlConnection
 </code></pre>
 </li>
-<li><p>Use the <code>.query()</code> method of the pump in <code>.process()</code></p>
+<li><p>Use <code>.query()</code> method of the pump in <code>.process()</code></p>
 <pre><code class="lang-coffee">pump
   .process <span class="hljs-function"><span class="hljs-params">(data)</span> -&gt;</span>
     <span class="hljs-property">@query</span> <span class="hljs-string">'INSERT INTO customer (name, address) VALUES (?)'</span>, [ data.name, data.address ]
 </code></pre>
-<p>Please note that the <code>.query()</code> method returns a promise (it is the promisified version of
-<code>connection.query()</code>).</p>
+<p>The method returns a promise (it is the promisified version of <code>connection.query()</code>), so
+you can use it <code>.process()</code> callbacks (note that <code>.process()</code> callback must return a promise).</p>
+</li>
+<li><p>Use <code>.escape(value)</code> to escape value when query is built by concatenating strings</p>
+<pre><code class="lang-coffee">pump
+  .process <span class="hljs-function"><span class="hljs-params">(data)</span> -&gt;</span>
+    <span class="hljs-property">@query</span> <span class="hljs-string">'INSERT INTO customer (name) VALUES (#{@escape(data.name)})'</span>
+</code></pre>
 </li>
 </ul>
 <p>Complete example: Copy data from one table to another</p>
@@ -149,6 +160,9 @@ mysqlCopy = <span class="hljs-keyword">new</span> Pump
             Promise.reject(<span class="hljs-string">'Query returned no result'</span>)
           <span class="hljs-keyword">else</span>
             Promise.reject(<span class="hljs-string">'Query returned more than one result'</span>)
+
+    target.<span class="hljs-function"><span class="hljs-title">escape</span> = <span class="hljs-params">(value)</span> -&gt;</span>
+      <span class="hljs-property">@_mysql</span>.connection.escape value
 
 <span class="hljs-built_in">module</span>.exports = mysqlMixin</pre></div></div>
             

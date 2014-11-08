@@ -19,6 +19,11 @@
           <div id="jump_page">
             
               
+              <a class="source" href="BatchMixin.html">
+                BatchMixin.coffee
+              </a>
+            
+              
               <a class="source" href="CsvWriterMixin.html">
                 CsvWriterMixin.coffee
               </a>
@@ -263,7 +268,9 @@ customersExcelSheet
             
             <div class="content"><div class='highlight'><pre>    target.<span class="hljs-function"><span class="hljs-title">writeRow</span> = <span class="hljs-params">(columns)</span> -&gt;</span>
       <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> Error <span class="hljs-string">'Use createWorksheet before writing rows'</span> <span class="hljs-keyword">if</span> !<span class="hljs-property">@_excel</span>.worksheet?
-      <span class="hljs-property">@_excel</span>.worksheet.Cell(<span class="hljs-property">@_excel</span>.currentRow, index + <span class="hljs-number">1</span>).String(value) <span class="hljs-keyword">for</span> value, index <span class="hljs-keyword">in</span> columns
+      <span class="hljs-keyword">for</span> value, index <span class="hljs-keyword">in</span> columns
+        <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> Error <span class="hljs-string">"Null or undefined value written to cell <span class="hljs-subst">#{<span class="hljs-property">@_excel</span>.currentRow}</span>:<span class="hljs-subst">#{index + <span class="hljs-number">1</span>}</span>"</span> <span class="hljs-keyword">if</span> value <span class="hljs-keyword">is</span> <span class="hljs-literal">null</span> <span class="hljs-keyword">or</span> value <span class="hljs-keyword">is</span> <span class="hljs-literal">undefined</span>
+        <span class="hljs-property">@_excel</span>.worksheet.Cell(<span class="hljs-property">@_excel</span>.currentRow, index + <span class="hljs-number">1</span>).String(value)
       <span class="hljs-property">@_excel</span>.currentRow++
 
     onMixin.apply(target, [ target ])
