@@ -101,11 +101,7 @@ module.exports = class Pump extends EventEmitter
         @currentRead = null
         @_processing = @_process data, @
       .catch(Promise.CancellationError, ->)
-      .catch (err) =>
-        return if @_errorBuffer.isFull()
-        @_errorBuffer.write
-          message: err
-          pump: @_id
+      .catch (err) => @writeError err
       .done => do @_pump
 
   sealOutputBuffers: ->
