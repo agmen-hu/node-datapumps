@@ -232,6 +232,7 @@ fourth was written to test/output buffer
 The core components of datapumps is only responsible for passing data in a flow-controlled manner.
 The features required for import, export or transfer is provided by mixins:
  * [BatchMixin](http://agmen-hu.github.io/node-datapumps/docs/mixin/BatchMixin.html) - Processes input in batches. Useful with MysqlMixin or other database writing mixins (batch insert can be much faster than inserting one by one).
+ * [MergeMixin](http://agmen-hu.github.io/node-datapumps/docs/mixin/MergeMixin.html) - Enables pump to read from multiple input buffers.
  * [ObjectTransformMixin](http://agmen-hu.github.io/node-datapumps/docs/mixin/ObjectTransformMixin.html) - Common object transformation and validation methods
  * [CsvWriterMixin](http://agmen-hu.github.io/node-datapumps/docs/mixin/CsvWriterMixin.html) - Writes csv files using fast-csv package
  * [ExcelWriterMixin](http://agmen-hu.github.io/node-datapumps/docs/mixin/ExcelWriterMixin.html) - Writes excel xlsx workbooks
