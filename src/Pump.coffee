@@ -175,11 +175,7 @@ module.exports = class Pump extends EventEmitter
         resolve()
 
   logErrorsToConsole: ->
-    @whenFinished()
-      .then =>
-        if !@errorBuffer().isEmpty()
-          console.log 'Errors during processing:'
-          for error in @errorBuffer().getContent()
-            name = error.pump ? '(root)'
-            console.log " - In pump #{name}: #{error.message}"
+    @errorBuffer().on 'write', (error) ->
+      name = error.pump ? '(root)'
+      console.log "Error: pump #{name}: #{error.message}"
     @
