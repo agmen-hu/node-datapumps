@@ -39,6 +39,7 @@ class Buffer extends EventEmitter
           resolve @writeAsync data
 
   writeArrayAsync: (dataArray) ->
+    return Promise.resolve() if !dataArray.length
     first = dataArray.shift()
     @writeAsync first
       .then => @writeArrayAsync dataArray if dataArray.length > 0
