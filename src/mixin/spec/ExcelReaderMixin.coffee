@@ -11,6 +11,20 @@ describe 'ExcelReaderMixin(options)', ->
       mixin target
     ).should.throw 'worksheet property is required for ExcelReaderMixin'
 
+  it 'should read workbook if path is given', ->
+    target =
+      from: sinon.spy()
+
+    mixin = ExcelReaderMixin
+      path: __dirname + '/data/nameAndAddress.xlsx'
+      worksheet: 'TestSheet'
+
+    mixin(target)
+    target.from.calledOnce.should.be.true
+    target.from.getCall(0).args[0].getContent().should.eql [
+      { Name: 'foo', Address: 'bar' }
+    ]
+
   it 'should convert worksheet into json and put it in the input buffer of the pump', ->
     workbook = xlsx.readFile __dirname + '/data/nameAndAddress.xlsx'
     target =
