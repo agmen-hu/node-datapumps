@@ -91,11 +91,79 @@
               
             </div>
             
-            <div class="content"><div class='highlight'><pre>{ <span class="hljs-attribute">utils</span>: { <span class="hljs-attribute">sheet_to_json</span>: convertSheetToJson } } = <span class="hljs-built_in">require</span> <span class="hljs-string">'xlsx'</span>
-Buffer = <span class="hljs-built_in">require</span> <span class="hljs-string">'../Buffer'</span>
+            <div class="content"><div class='highlight'><pre>{ readFile, <span class="hljs-attribute">utils</span>: { <span class="hljs-attribute">sheet_to_json</span>: convertSheetToJson } } = <span class="hljs-built_in">require</span> <span class="hljs-string">'xlsx'</span>
+Buffer = <span class="hljs-built_in">require</span> <span class="hljs-string">'../Buffer'</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-2">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>
+              <p>OOXML Excel (.xlsx) reader mixin for node-datapumps.</p>
+<p>Please note that the excel workbook must have a header row.</p>
+<p>Usage:</p>
+<ul>
+<li><p>Load an .xlsx and select a worksheet:</p>
+<pre><code class="lang-coffee">{ ExcelReaderMixin } = <span class="hljs-built_in">require</span>(<span class="hljs-string">'datapumps/mixins'</span>)
+pump
+  .mixin ExcelReaderMixin
+    <span class="hljs-attribute">path</span>: <span class="hljs-string">'path/to/myWorkbook.xlsx'</span>
+    <span class="hljs-attribute">worksheet</span>: <span class="hljs-string">'Worksheet1'</span>
+</code></pre>
+</li>
+<li><p>The <code>.process()</code> method will receive a plain object per row (property names from the header row):</p>
+<pre><code class="lang-coffee">pump
+  .process <span class="hljs-function"><span class="hljs-params">(row)</span> -&gt;</span>
+    <span class="hljs-built_in">console</span>.log row.first_name <span class="hljs-comment"># assuming your worksheet has a first_name column</span>
+</code></pre>
+</li>
+<li><p>Alternatively, you can set worksheet from an already loaded workbook:</p>
+<pre><code class="lang-coffee">{ ExcelReaderMixin } = <span class="hljs-built_in">require</span>(<span class="hljs-string">'datapumps/mixins'</span>)
+xlsx = <span class="hljs-built_in">require</span> <span class="hljs-string">'xlsx'</span>
+xlsx.readFile <span class="hljs-string">'path/to/myWorkbook.xlsx'</span>
+pump1
+  .mixin ExcelReaderMixin
+    <span class="hljs-attribute">worksheet</span>: workbook.Sheets.Worksheet1
+pump2
+  .mixin ExcelReaderMixin
+    <span class="hljs-attribute">worksheet</span>: workbook.Sheets.Worksheet2
+</code></pre>
+</li>
+<li><p>You can also map column names to resulting property names:</p>
+<pre><code class="lang-coffee">{ ExcelReaderMixin } = <span class="hljs-built_in">require</span>(<span class="hljs-string">'datapumps/mixins'</span>)
+pump
+  .mixin ExcelReaderMixin
+    <span class="hljs-attribute">path</span>: <span class="hljs-string">'path/to/myWorkbook.xlsx'</span>
+    <span class="hljs-attribute">worksheet</span>: <span class="hljs-string">'Worksheet1'</span>
+    <span class="hljs-attribute">columnMapping</span>:
+      <span class="hljs-string">'Very long column name with spaces'</span>: <span class="hljs-string">'myColumn'</span>
+</code></pre>
+</li>
+<li><p>ExcelReaderMixin plays well with <a href="http://agmen-hu.github.io/node-datapumps/docs/mixin/ObjectTransformMixin.html">ObjectTransformMixin</a> for validating worksheet content:</p>
+<pre><code class="lang-coffee">{ ObjectTransformMixin, ExcelReaderMixin } = <span class="hljs-built_in">require</span>(<span class="hljs-string">'datapumps/mixins'</span>)
+pump
+  .mixin ExcelReaderMixin
+    <span class="hljs-attribute">path</span>: <span class="hljs-string">'path/to/myWorkbook.xlsx'</span>
+    <span class="hljs-attribute">worksheet</span>: <span class="hljs-string">'Worksheet1'</span>
+  .mixin ObjectTransformMixin()
+  .process <span class="hljs-function"><span class="hljs-params">(row)</span> -&gt;</span>
+    row = <span class="hljs-property">@propertiesToLowerCase</span> row
+    <span class="hljs-property">@requireProperty</span> row, [ <span class="hljs-string">'first name'</span>, <span class="hljs-string">'last name'</span>, <span class="hljs-string">'email address'</span> ]
+</code></pre>
+</li>
+</ul>
 
-<span class="hljs-function"><span class="hljs-title">ExcelReaderMixin</span> = <span class="hljs-params">({ worksheet, columnMapping })</span> -&gt;</span>
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-title">ExcelReaderMixin</span> = <span class="hljs-params">({ worksheet, columnMapping, path })</span> -&gt;</span>
   <span class="hljs-function"><span class="hljs-params">(target)</span> -&gt;</span>
+    <span class="hljs-keyword">if</span> path?
+      workbook = readFile path
+      worksheet = workbook.Sheets[worksheet]
     <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> Error <span class="hljs-string">'worksheet property is required for ExcelReaderMixin'</span> <span class="hljs-keyword">if</span> !worksheet?
     target._excel =
       <span class="hljs-attribute">worksheet</span>: worksheet
