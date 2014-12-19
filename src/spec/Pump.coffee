@@ -166,11 +166,18 @@ describe 'Pump', ->
       pump.foo.should.equal 'bar'
 
   describe '#from()', ->
-    it 'should throw error when argument is not a buffer or stream', ->
+    it 'should throw error when argument is not a buffer, array or stream', ->
       pump = new Pump
       ( ->
         pump.from('test')
       ).should.throw 'Argument must be datapumps.Buffer or stream'
+
+    it 'should convert array to a sealed datapumps.Buffer', ->
+      (pump = new Pump)
+        .from [ 'foo', 'bar' ]
+
+      pump.from().isSealed().should.be.true
+      pump.from().getContent().should.eql [ 'foo', 'bar' ]
 
   describe '#pause()', ->
     it 'should return a promise that resolves when the pump paused', (done) ->
