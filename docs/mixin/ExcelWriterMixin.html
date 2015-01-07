@@ -110,6 +110,19 @@
 </code></pre>
 </li>
 </ul>
+<p>The mixin supports String or Number column types, the default type is String.
+Column types can be specified when writing headers or by calling <code>columnType(index, type)</code> method.</p>
+<pre><code class="lang-coffee">   pump
+     .mixin ExcelWriterMixin<span class="hljs-function"> -&gt;</span>
+       <span class="hljs-comment"># ...</span>
+       pump.writeHeaders [ <span class="hljs-string">'Name'</span>, <span class="hljs-string">'Code'</span> ], [ <span class="hljs-string">'String'</span>, <span class="hljs-string">'Number'</span> ]
+</code></pre>
+<p>   or</p>
+<pre><code class="lang-coffee">   pump
+     .mixin ExcelWriterMixin<span class="hljs-function"> -&gt;</span>
+       <span class="hljs-comment"># ...</span>
+       pump.columnType <span class="hljs-number">1</span>, <span class="hljs-string">'Number'</span> <span class="hljs-comment"># The first column index is 0</span>
+</code></pre>
 <p>Complete example:</p>
 <pre><code class="lang-coffee">customersExcelSheet = <span class="hljs-keyword">new</span> Pump
 customersExcelSheet
@@ -153,7 +166,9 @@ customersExcelSheet
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    target._excel = {}</pre></div></div>
+            <div class="content"><div class='highlight'><pre>    target._excel =
+      <span class="hljs-attribute">columnTypes</span>: []
+      <span class="hljs-attribute">path</span>: <span class="hljs-literal">null</span></pre></div></div>
             
         </li>
         
@@ -215,7 +230,8 @@ customersExcelSheet
             <div class="content"><div class='highlight'><pre>    target.<span class="hljs-function"><span class="hljs-title">createWorksheet</span> = <span class="hljs-params">(name)</span> -&gt;</span>
       <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> Error <span class="hljs-string">'Use createWorkbook before creating worksheet'</span> <span class="hljs-keyword">if</span> !<span class="hljs-property">@_excel</span>.workbook?
       <span class="hljs-property">@_excel</span>.worksheet = <span class="hljs-property">@_excel</span>.workbook.WorkSheet(name)
-      <span class="hljs-property">@_excel</span>.currentRow = <span class="hljs-number">1</span></pre></div></div>
+      <span class="hljs-property">@_excel</span>.currentRow = <span class="hljs-number">1</span>
+      @</pre></div></div>
             
         </li>
         
@@ -246,17 +262,26 @@ customersExcelSheet
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    target.<span class="hljs-function"><span class="hljs-title">writeHeaders</span> = <span class="hljs-params">(headers)</span> -&gt;</span>
+            <div class="content"><div class='highlight'><pre>    target.<span class="hljs-function"><span class="hljs-title">writeHeaders</span> = <span class="hljs-params">(headers, types = [])</span> -&gt;</span>
       <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> Error <span class="hljs-string">'Use createWorksheet before writing headers'</span> <span class="hljs-keyword">if</span> !<span class="hljs-property">@_excel</span>.worksheet?
       <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> Error <span class="hljs-string">'Use writeHeaders before writing any rows to the worksheet'</span> <span class="hljs-keyword">if</span> <span class="hljs-property">@_excel</span>.currentRow != <span class="hljs-number">1</span>
-      <span class="hljs-property">@_writeHeader</span> index, header <span class="hljs-keyword">for</span> header, index <span class="hljs-keyword">in</span> headers
+      <span class="hljs-keyword">for</span> header, index <span class="hljs-keyword">in</span> headers
+        <span class="hljs-property">@_writeHeader</span> index, header
+        <span class="hljs-property">@columnType</span> index, types[index] ? <span class="hljs-string">'String'</span>
       <span class="hljs-property">@_excel</span>.currentRow = <span class="hljs-number">2</span>
       @
 
     target.<span class="hljs-function"><span class="hljs-title">_writeHeader</span> = <span class="hljs-params">(index, header)</span> -&gt;</span>
       <span class="hljs-property">@_excel</span>.worksheet.Cell(<span class="hljs-number">1</span>, index + <span class="hljs-number">1</span>)
         .String(header)
-        .Style(<span class="hljs-property">@_excel</span>.boldStyle)</pre></div></div>
+        .Style(<span class="hljs-property">@_excel</span>.boldStyle)
+      @
+
+    target.<span class="hljs-function"><span class="hljs-title">columnType</span> = <span class="hljs-params">(index, type = <span class="hljs-literal">null</span>)</span> -&gt;</span>
+      <span class="hljs-keyword">return</span> <span class="hljs-property">@_excel</span>.columnTypes[index] <span class="hljs-keyword">if</span> type == <span class="hljs-literal">null</span>
+      <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> Error <span class="hljs-string">"Invalid column type '<span class="hljs-subst">#{type}</span>'. Only String, Number or Formula is allowed"</span> <span class="hljs-keyword">if</span> [<span class="hljs-string">'String'</span>, <span class="hljs-string">'Number'</span>, <span class="hljs-string">'Formula'</span>].indexOf(type) == -<span class="hljs-number">1</span>
+      <span class="hljs-property">@_excel</span>.columnTypes[index] = type
+      @</pre></div></div>
             
         </li>
         
@@ -275,8 +300,10 @@ customersExcelSheet
       <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> Error <span class="hljs-string">'Use createWorksheet before writing rows'</span> <span class="hljs-keyword">if</span> !<span class="hljs-property">@_excel</span>.worksheet?
       <span class="hljs-keyword">for</span> value, index <span class="hljs-keyword">in</span> columns
         <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> Error <span class="hljs-string">"Null or undefined value written to cell <span class="hljs-subst">#{<span class="hljs-property">@_excel</span>.currentRow}</span>:<span class="hljs-subst">#{index + <span class="hljs-number">1</span>}</span>"</span> <span class="hljs-keyword">if</span> value <span class="hljs-keyword">is</span> <span class="hljs-literal">null</span> <span class="hljs-keyword">or</span> value <span class="hljs-keyword">is</span> <span class="hljs-literal">undefined</span>
-        <span class="hljs-property">@_excel</span>.worksheet.Cell(<span class="hljs-property">@_excel</span>.currentRow, index + <span class="hljs-number">1</span>).String(value)
+        cell = <span class="hljs-property">@_excel</span>.worksheet.Cell(<span class="hljs-property">@_excel</span>.currentRow, index + <span class="hljs-number">1</span>)
+        cell[<span class="hljs-property">@_excel</span>.columnTypes[index] ? <span class="hljs-string">'String'</span>](value)
       <span class="hljs-property">@_excel</span>.currentRow++
+      @
 
     onMixin.apply(target, [ target ])
 
