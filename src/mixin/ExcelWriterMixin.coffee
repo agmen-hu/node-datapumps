@@ -24,6 +24,22 @@
 #        pump.writeRow [ product.name, product.code ]
 #    ```
 #
+# The mixin supports String or Number column types, the default type is String.
+# Column types can be specified when writing headers or by calling `columnType(index, type)` method.
+#    ```coffee
+#    pump
+#      .mixin ExcelWriterMixin ->
+#        # ...
+#        pump.writeHeaders [ 'Name', 'Code' ], [ 'String', 'Number' ]
+#    ```
+#    or
+#    ```coffee
+#    pump
+#      .mixin ExcelWriterMixin ->
+#        # ...
+#        pump.columnType 1, 'Number' # The first column index is 0
+#    ```
+#
 # Complete example:
 # ```coffee
 # customersExcelSheet = new Pump
@@ -54,7 +70,9 @@ excel4node = require('excel4node')
 ExcelWriterMixin = (onMixin) ->
   (target) ->
     # This mixin extends the `target` object. It add an `_excel` property and the methods below:
-    target._excel = {}
+    target._excel =
+      columnTypes: []
+      path: null
 
     # Creates the workbook which is written to disk when the pump ends.
     target.createWorkbook = (path) ->
@@ -81,16 +99,19 @@ ExcelWriterMixin = (onMixin) ->
       throw new Error 'Use createWorkbook before creating worksheet' if !@_excel.workbook?
       @_excel.worksheet = @_excel.workbook.WorkSheet(name)
       @_excel.currentRow = 1
+      @
 
     # Returns current worksheet.
     target.currentWorksheet = ->
       @_excel.worksheet
 
     # Writes header row. See usage example at the top.
-    target.writeHeaders = (headers) ->
+    target.writeHeaders = (headers, types = []) ->
       throw new Error 'Use createWorksheet before writing headers' if !@_excel.worksheet?
       throw new Error 'Use writeHeaders before writing any rows to the worksheet' if @_excel.currentRow != 1
-      @_writeHeader index, header for header, index in headers
+      for header, index in headers
+        @_writeHeader index, header
+        @columnType index, types[index] ? 'String'
       @_excel.currentRow = 2
       @
 
@@ -98,14 +119,23 @@ ExcelWriterMixin = (onMixin) ->
       @_excel.worksheet.Cell(1, index + 1)
         .String(header)
         .Style(@_excel.boldStyle)
+      @
+
+    target.columnType = (index, type = null) ->
+      return @_excel.columnTypes[index] if type == null
+      throw new Error "Invalid column type '#{type}'. Only String, Number or Formula is allowed" if ['String', 'Number', 'Formula'].indexOf(type) == -1
+      @_excel.columnTypes[index] = type
+      @
 
     # Writes a new row in the worksheet. See usage example at the top.
     target.writeRow = (columns) ->
       throw new Error 'Use createWorksheet before writing rows' if !@_excel.worksheet?
       for value, index in columns
         throw new Error "Null or undefined value written to cell #{@_excel.currentRow}:#{index + 1}" if value is null or value is undefined
-        @_excel.worksheet.Cell(@_excel.currentRow, index + 1).String(value)
+        cell = @_excel.worksheet.Cell(@_excel.currentRow, index + 1)
+        cell[@_excel.columnTypes[index] ? 'String'](value)
       @_excel.currentRow++
+      @
 
     onMixin.apply(target, [ target ])
 
