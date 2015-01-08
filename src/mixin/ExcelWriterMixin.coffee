@@ -131,7 +131,7 @@ ExcelWriterMixin = (onMixin) ->
     target.writeRow = (columns) ->
       throw new Error 'Use createWorksheet before writing rows' if !@_excel.worksheet?
       for value, index in columns
-        throw new Error "Null or undefined value written to cell #{@_excel.currentRow}:#{index + 1}" if value is null or value is undefined
+        continue if value is null or value is undefined
         cell = @_excel.worksheet.Cell(@_excel.currentRow, index + 1)
         cell[@_excel.columnTypes[index] ? 'String'](value)
       @_excel.currentRow++

@@ -15,7 +15,7 @@
   "bugs": {
     "url": "https://github.com/agmen-hu/node-datapumps/issues"
   },
-  "version": "0.3.23",
+  "version": "0.3.24",
   "dependencies": {
     "bluebird": "^2.2.2",
     "coffee-script": "^1.7.1",
@@ -36,7 +36,7 @@
     "sinon": "~1.10.3"
   },
   "scripts": {
-    "prepublish": "coffee -o lib -c src",
+    "prepublish": "coffee --no-header -o lib -c src",
     "test": "mocha --compilers coffee:coffee-script/register src/spec src/mixin/spec"
   },
   "keywords": [

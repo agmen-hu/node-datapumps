@@ -63,3 +63,24 @@ describe 'ExcelWriterMixin(onMixin)', ->
     ( ->
       target.writeRow [ 'test ']
     ).should.throw 'Use createWorksheet before writing rows'
+
+  it 'should leave cells with null or undefined value empty', ->
+    target =
+      on: ->
+
+    mixin = ExcelWriterMixin ->
+      target.createWorkbook 'test.xlsx'
+      target.createWorksheet 'Customer'
+    mixin target
+
+    target._excel.workbook.write = ->
+
+    cell =
+      String: sinon.spy()
+    target._excel.worksheet.Cell = sinon.stub().returns cell
+
+    target.writeRow [ null ]
+    cell.String.calledOnce.should.be.false
+
+    target.writeRow [ 'test' ]
+    cell.String.calledOnce.should.be.true
