@@ -47,6 +47,7 @@ module.exports = (db) ->
       (target._mongo.whenConnected = mongo.MongoClient.connectAsync db)
         .then (db) ->
           target._mongo.db = db
+          target.whenFinished().then -> target._mongo.db.close()
           if target._mongo?.collection?._datapumpsMixinName?
             target._mongo.collection = db.collection target._mongo.collection._datapumpsMixinName
 

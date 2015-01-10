@@ -55,7 +55,8 @@ describe 'MongodbMixin(db)', ->
     streamSpy = sinon.stub()
       .returns { pipe: -> }
 
-    target = {}
+    target =
+      whenFinished: sinon.stub().returns then: ->
     mixin = MongodbMixin 'mongodb://127.0.0.1:27017/test'
     mixin target
 
@@ -82,7 +83,8 @@ describe 'MongodbMixin(db)', ->
     mockCollection =
       insertAsync: sinon.stub().returns { then: -> }
 
-    target = {}
+    target =
+      whenFinished: sinon.stub().returns then: ->
     mixin = MongodbMixin 'mongodb://127.0.0.1:27017/test'
     mixin target
 
