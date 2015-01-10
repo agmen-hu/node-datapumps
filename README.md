@@ -2,47 +2,81 @@
 [![Travis CI Badge](https://api.travis-ci.org/agmen-hu/node-datapumps.svg?branch=master)](https://travis-ci.org/agmen-hu/node-datapumps "Travis CI")
 
 ## Overview
-Create a group of pumps to import, export, transform or transfer data.
+Use pumps to import, export, transform or transfer data. A data pump will read from its input stream, array or datapumps Buffer and will write to its output buffers. A pump will finish when all data is consumed from its output buffers. Make a group of pumps to handle complex ETL tasks.
 
 ## Installation
 ```
 $ npm install datapumps --save
 ```
 
-## Usage example: csv export from mysql
- * Create a pump that loads the data from mysql:
-   ```js
-   var pump = new datapumps.Pump()
-   pump.from(mysqlConnection.query('SELECT id,last_name,first_name FROM customer').stream());
-   ```
-   This pump will read the query results into a buffer. The pump controls the data flow, i.e.
-   it pauses read of query results when buffer is full.
+## Usage example: export mongodb to excel
+```js
+var dp = require('datapumps');
 
- * Write data to csv with csvWriterMixin:
+var pump = new dp.Pump()
+pump
+  .mixin(dp.mixin.MongodbMixin('mongodb://localhost/marketing'))
+  .useCollection('Contact')
+  .from(pump.find({ country: "US" }))
+  .mixin(dp.mixin.ExcelWriterMixin(function() {
+    pump.createWorkbook('/tmp/ContactsInUs.xlsx');
+    pump.createWorksheet('Contacts');
+    pump.writeHeaders(['Name', 'Email']);
+  }))
+  .process(function(contact) {
+    return pump.writeRow([ contact.name, contact.email ]);
+  })
+  .logErrorsToConsole()
+  .start()
+  .whenFinished().then(function() {
+    console.log("Done writing contacts to file");
+  });
+```
+
+Usage example in more details:
+ * First, we create a pump and setup reading from mongodb
+   ```js
+   var pump = new dp.Pump()
+   pump
+     .mixin(dp.mixin.MongodbMixin('mongodb://localhost/marketing'))
+     .useCollection('Contact')
+     .from(pump.find({ country: "US" }))
+   ```
+   Mixins extend the functionality of a pump. The [MongodbMixin](http://agmen-hu.github.io/node-datapumps/docs/mixin/MongodbMixin.html)
+   adds `.find()` method which executes a query on the collection specified with `.useCollection()`
+   method. The pump will read the query results and controls data flow, i.e. it pauses read when it
+   cannot write excel rows.
+
+ * Write data to excel with [ExcelWriterMixin](http://agmen-hu.github.io/node-datapumps/docs/mixin/ExcelWriterMixin.html):
    ```js
    pump
-     .mixin(datapumps.mixin.CsvWriterMixin({
-       path: 'test.csv',
-       headers: [ 'Id', 'First Name', 'Last Name' ]
+     .mixin(dp.mixin.ExcelWriterMixin(function() {
+       pump.createWorkbook('/tmp/ContactsInUs.xlsx');
+       pump.createWorksheet('Contacts');
+       pump.writeHeaders(['Name', 'Email']);
      }))
-     .process(function(customer) {
-       this.writeRow([ customer.id, customer.first_name, customer.last_name ]);
+     .process(function(contact) {
+       return pump.writeRow([ contact.name, contact.email ]);
+     })
+   ```
+   The excel workbook, worksheet and header rows are created when adding the mixin to the pump.
+   The callback given in `.process()` may transform or filter data and should return a [promise](https://promisesaplus.com/) (we use [bluebird](https://github.com/petkaantonov/bluebird)
+   library) that fulfills when the data is processed. In this example, the default processing callback
+   (which copies data to the output buffer by default) is overridden with writing rows to the excel
+   worksheet.
+
+ * Finally, start the pump and write to console the pumping is done.
+   ```js
+   pump
+     .logErrorsToConsole()
+     .start()
+     .whenFinished().then(function() {
+       console.log("Done writing contacts to file");
      });
    ```
-   The `CsvWriterMixin` extends the functionality of the pump, it creates csv file with given
-   headers and adds the `.writeRow` method to the pump. The `.process` method
-   (which copies data to the output buffer by default) is overridden with writing rows to the csv.
-
- * Start to pump and log when its finished:
-   ```js
-   pump
-     .start()
-     .whenFinished()
-       .then(function() {
-         console.log('CSV export complete.');
-       });
-   ```
-   The `.whenFinished()` method returns a promise that resolves when the pump finished.
+   The `.logErrorsToConsole()` will log any error to the console, surprisingly. The pump will start
+   when the `.start()` method is called. The `.whenFinished()` method returns a
+   [promise](https://promisesaplus.com/) that resolves when the pump finished.
 
 ## Pump
 A pump reads data from its input buffer or stream and copies it to the output buffer by default:
