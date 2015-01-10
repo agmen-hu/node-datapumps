@@ -33,7 +33,7 @@ pump
   });
 ```
 
-Usage example in more details:
+Usage example with more details:
  * First, we create a pump and setup reading from mongodb
    ```js
    var pump = new dp.Pump()
@@ -65,7 +65,7 @@ Usage example in more details:
    (which copies data to the output buffer by default) is overridden with writing rows to the excel
    worksheet.
 
- * Finally, start the pump and write to console the pumping is done.
+ * Finally, start the pump and write to console when it's done.
    ```js
    pump
      .logErrorsToConsole()
