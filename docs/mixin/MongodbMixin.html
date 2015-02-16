@@ -132,6 +132,7 @@ mongo = Promise.promisifyAll <span class="hljs-built_in">require</span> <span cl
       (target._mongo.whenConnected = mongo.MongoClient.connectAsync db)
         .<span class="hljs-keyword">then</span> <span class="hljs-function"><span class="hljs-params">(db)</span> -&gt;</span>
           target._mongo.db = db
+          target.whenFinished().<span class="hljs-keyword">then</span><span class="hljs-function"> -&gt;</span> target._mongo.db.close()
           <span class="hljs-keyword">if</span> target._mongo?.collection?._datapumpsMixinName?
             target._mongo.collection = db.collection target._mongo.collection._datapumpsMixinName
 

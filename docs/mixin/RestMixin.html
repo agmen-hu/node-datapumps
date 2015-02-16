@@ -99,7 +99,7 @@ pump
   .mixin RestMixin
   .fromRest
     <span class="hljs-attribute">query</span>:<span class="hljs-function"> -&gt;</span> <span class="hljs-property">@get</span> <span class="hljs-string">'http://someservice.io/api/v1/users'</span>
-    <span class="hljs-attribute">resultMapping</span>: <span class="hljs-function"><span class="hljs-params">(result)</span> -&gt;</span> result.users
+    <span class="hljs-attribute">resultMapping</span>: <span class="hljs-function"><span class="hljs-params">(result, response)</span> -&gt;</span> result.users
   .process <span class="hljs-function"><span class="hljs-params">(user)</span> -&gt;</span>
     <span class="hljs-comment"># ...</span>
 </code></pre>
@@ -115,8 +115,8 @@ array to be filled in the input buffer.</p>
   .mixin RestMixin
   .fromRest
     query: (nextPage) -&gt; @get nextPage ? <span class="hljs-string">'http://someservice.io/api/v1/users'</span>
-    resultMapping: (result) -&gt; result.users
-    nextPage: (result) -&gt; result.paging.nextPage
+    resultMapping: (result, response) -&gt; result.users
+    nextPage: (result, response) -&gt; result.paging.nextPage
 </code></pre>
 <p>Only two things to note when using paginated REST service:</p>
 <ul>
@@ -131,7 +131,7 @@ pump
   .mixin RestMixin
   .process <span class="hljs-function"><span class="hljs-params">(data)</span> =&gt;</span>
     <span class="hljs-property">@get</span> <span class="hljs-string">'http://someservice.io/api/v1/user/'</span> + data.username
-      .<span class="hljs-keyword">then</span> <span class="hljs-function"><span class="hljs-params">(user)</span> =&gt;</span>
+      .<span class="hljs-keyword">then</span> <span class="hljs-function"><span class="hljs-params">(user, response)</span> =&gt;</span>
         data.email = user.email
         <span class="hljs-property">@copy</span> data
 </code></pre>
@@ -174,10 +174,10 @@ restler = <span class="hljs-built_in">require</span> <span class="hljs-string">'
     <span class="hljs-property">@from</span> <span class="hljs-property">@createBuffer</span>()
     <span class="hljs-function"><span class="hljs-title">queryAndWriteInputBuffer</span> = <span class="hljs-params">(nextPage)</span> =&gt;</span>
       config.query.apply @, [ nextPage ]
-        .<span class="hljs-keyword">then</span> <span class="hljs-function"><span class="hljs-params">(result)</span> =&gt;</span>
-          <span class="hljs-property">@from</span>().writeArrayAsync(config.resultMapping(result) )
+        .<span class="hljs-keyword">then</span> <span class="hljs-function"><span class="hljs-params">(result, response)</span> =&gt;</span>
+          <span class="hljs-property">@from</span>().writeArrayAsync(config.resultMapping(result, response) )
             .done<span class="hljs-function"> =&gt;</span>
-              nextPage = config.nextPage(result)
+              nextPage = config.nextPage(result, response)
               <span class="hljs-keyword">if</span> (nextPage <span class="hljs-keyword">is</span> <span class="hljs-literal">undefined</span>) <span class="hljs-keyword">or</span> (nextPage <span class="hljs-keyword">is</span> <span class="hljs-literal">null</span>)
                 <span class="hljs-property">@from</span>().seal()
               <span class="hljs-keyword">else</span>
@@ -190,11 +190,11 @@ restler = <span class="hljs-built_in">require</span> <span class="hljs-string">'
     methodArgs = arguments
     <span class="hljs-keyword">new</span> Promise <span class="hljs-function"><span class="hljs-params">(resolve, reject)</span> -&gt;</span>
       restler[methodName].apply(restler, methodArgs)
-        .<span class="hljs-literal">on</span> <span class="hljs-string">'complete'</span>, <span class="hljs-function"><span class="hljs-params">(result)</span> -&gt;</span>
+        .<span class="hljs-literal">on</span> <span class="hljs-string">'complete'</span>, <span class="hljs-function"><span class="hljs-params">(result, response)</span> -&gt;</span>
           <span class="hljs-keyword">if</span> result <span class="hljs-keyword">instanceof</span> Error
             reject result
           <span class="hljs-keyword">else</span>
-            resolve result</pre></div></div>
+            resolve result, response</pre></div></div>
             
         </li>
         
