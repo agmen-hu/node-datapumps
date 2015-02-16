@@ -13,7 +13,7 @@
 #   .mixin RestMixin
 #   .fromRest
 #     query: -> @get 'http://someservice.io/api/v1/users'
-#     resultMapping: (result) -> result.users
+#     resultMapping: (result, response) -> result.users
 #   .process (user) ->
 #     # ...
 # ```
@@ -33,8 +33,8 @@
 #   .mixin RestMixin
 #   .fromRest
 #     query: (nextPage) -> @get nextPage ? 'http://someservice.io/api/v1/users'
-#     resultMapping: (result) -> result.users
-#     nextPage: (result) -> result.paging.nextPage
+#     resultMapping: (result, response) -> result.users
+#     nextPage: (result, response) -> result.paging.nextPage
 # ```
 # Only two things to note when using paginated REST service:
 #  * `nextPage` key is a callback which may return anything other than undefined or null to continue
@@ -49,7 +49,7 @@
 #   .mixin RestMixin
 #   .process (data) =>
 #     @get 'http://someservice.io/api/v1/user/' + data.username
-#       .then (user) =>
+#       .then (user, response) =>
 #         data.email = user.email
 #         @copy data
 # ```
@@ -92,10 +92,10 @@ module.exports = RestMixin = (target) ->
     @from @createBuffer()
     queryAndWriteInputBuffer = (nextPage) =>
       config.query.apply @, [ nextPage ]
-        .then (result) =>
-          @from().writeArrayAsync(config.resultMapping(result) )
+        .then (result, response) =>
+          @from().writeArrayAsync(config.resultMapping(result, response) )
             .done =>
-              nextPage = config.nextPage(result)
+              nextPage = config.nextPage(result, response)
               if (nextPage is undefined) or (nextPage is null)
                 @from().seal()
               else
@@ -108,8 +108,8 @@ _wrapMethod = (target, methodName) ->
     methodArgs = arguments
     new Promise (resolve, reject) ->
       restler[methodName].apply(restler, methodArgs)
-        .on 'complete', (result) ->
+        .on 'complete', (result, response) ->
           if result instanceof Error
             reject result
           else
-            resolve result
+            resolve result, response
