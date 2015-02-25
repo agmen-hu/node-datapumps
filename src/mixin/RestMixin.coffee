@@ -13,7 +13,7 @@
 #   .mixin RestMixin
 #   .fromRest
 #     query: -> @get 'http://someservice.io/api/v1/users'
-#     resultMapping: (result, response) -> result.users
+#     resultMapping: (response) -> response.result.users
 #   .process (user) ->
 #     # ...
 # ```
@@ -33,8 +33,8 @@
 #   .mixin RestMixin
 #   .fromRest
 #     query: (nextPage) -> @get nextPage ? 'http://someservice.io/api/v1/users'
-#     resultMapping: (result, response) -> result.users
-#     nextPage: (result, response) -> result.paging.nextPage
+#     resultMapping: (response) -> response.result.users
+#     nextPage: (response) -> response.result.paging.nextPage
 # ```
 # Only two things to note when using paginated REST service:
 #  * `nextPage` key is a callback which may return anything other than undefined or null to continue
@@ -49,8 +49,8 @@
 #   .mixin RestMixin
 #   .process (data) =>
 #     @get 'http://someservice.io/api/v1/user/' + data.username
-#       .then (user, response) =>
-#         data.email = user.email
+#       .then (response) =>
+#         data.email = response.result.email
 #         @copy data
 # ```
 #
@@ -92,10 +92,10 @@ module.exports = RestMixin = (target) ->
     @from @createBuffer()
     queryAndWriteInputBuffer = (nextPage) =>
       config.query.apply @, [ nextPage ]
-        .then (result, response) =>
-          @from().writeArrayAsync(config.resultMapping(result, response) )
+        .then (response) =>
+          @from().writeArrayAsync(config.resultMapping(response))
             .done =>
-              nextPage = config.nextPage(result, response)
+              nextPage = config.nextPage(response)
               if (nextPage is undefined) or (nextPage is null)
                 @from().seal()
               else
@@ -112,4 +112,5 @@ _wrapMethod = (target, methodName) ->
           if result instanceof Error
             reject result
           else
-            resolve result, response
+            response.result = result
+            resolve response
