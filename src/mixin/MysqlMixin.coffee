@@ -71,13 +71,13 @@ mysqlMixin = (connection) ->
 
     target.selectOne = (query, args...) ->
       target.query(query, args)
-        .then (results) ->
+        .then ([results, fields]) ->
           if results.length == 1
-            Promise.resolve(results[0])
+            results[0]
           else if results.length == 0
-            Promise.reject('Query returned no result')
+            throw new Error('Query returned no result')
           else
-            Promise.reject('Query returned more than one result')
+            throw new Error('Query returned more than one result')
 
     target.escape = (value) ->
       @_mysql.connection.escape value
