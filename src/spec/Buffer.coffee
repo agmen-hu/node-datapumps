@@ -32,6 +32,27 @@ describe 'Buffer', ->
 
       buffer.write('test')
 
+  describe '#appendArray(dataArray)', ->
+    it 'should add data to the buffer', ->
+      buffer = new Buffer
+        size: 10
+
+      buffer.write 'test'
+      buffer.appendArray [ 'foo', 'bar' ]
+
+      buffer.size.should.equal 10
+      buffer.getContent().should.eql [ 'test', 'foo', 'bar' ]
+
+    it 'should increase buffer size when necessary', ->
+      buffer = new Buffer
+        size: 2
+
+      buffer.write 'test'
+      buffer.appendArray [ 'foo', 'bar' ]
+
+      buffer.size.should.equal 3
+      buffer.getContent().should.eql [ 'test', 'foo', 'bar' ]
+
   describe '#writeAsync(data)', ->
     it 'should write buffer when not full', (done) ->
       buffer = new Buffer

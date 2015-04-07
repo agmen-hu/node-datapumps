@@ -30,6 +30,16 @@ class Buffer extends EventEmitter
     @emit 'full' if @isFull()
     @
 
+  append: (data) ->
+    @appendArray [ data ]
+    @
+
+  appendArray: (dataArray) ->
+    newSize = @content.length + dataArray.length
+    @size = newSize if newSize > @size
+    @write data for data in dataArray
+    @
+
   writeAsync: (data) ->
     if !@isFull()
       Promise.resolve @write data
