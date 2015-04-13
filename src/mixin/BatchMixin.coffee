@@ -57,6 +57,7 @@ module.exports = BatchProcessMixin = (target) ->
     if @_from.isEnded()
       if @_batch.length > 0
         Promise.resolve(@_processBatch(@_batch))
+          .catch (err) => @writeError err
           .then => @sealOutputBuffers()
       else
         @sealOutputBuffers()
