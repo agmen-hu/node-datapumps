@@ -13,6 +13,7 @@ module.exports = class Pump extends EventEmitter
     @_from = null
     @_id = null
     @_errorBuffer = new Buffer
+    @_debug = false
     @buffers
       output: new Buffer
 
@@ -50,7 +51,7 @@ module.exports = class Pump extends EventEmitter
   writeError: (err) ->
     return if @_errorBuffer.isFull()
     @_errorBuffer.write
-      message: err
+      error: err
       pump: @_id
     @
 
@@ -174,12 +175,21 @@ module.exports = class Pump extends EventEmitter
   whenFinished: ->
     return Promise.resolve() if @isEnded()
 
-    new Promise (resolve) =>
-      @on 'end', ->
-        resolve()
+    new Promise (resolve, reject) =>
+      @on 'end', -> resolve()
+      @on 'error', -> reject 'Pumping failed. See .errorBuffer() contents for error messages'
 
   logErrorsToConsole: ->
-    @errorBuffer().on 'write', (error) ->
-      name = error.pump ? '(root)'
-      console.log "Error: pump #{name}: #{error.message}"
+    @errorBuffer().on 'write', (errorRecord) ->
+      name = errorRecord.pump ? '(root)'
+      if @_debug
+        console.log "Error in pump #{name}:"
+        console.log errorRecord.error.stack
+      else
+        console.log "Error in pump #{name}: #{errorRecord.error}"
+    @
+
+  debug: (value = null) ->
+    return @_debug if value is null
+    @_debug = value
     @

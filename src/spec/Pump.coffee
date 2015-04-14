@@ -91,7 +91,7 @@ describe 'Pump', ->
       pump
         .on 'end', ->
           pump.errorBuffer().getContent().length.should.equal(1)
-          pump.errorBuffer().getContent()[0].should.eql({ message: 'test', pump: null })
+          pump.errorBuffer().getContent()[0].should.eql({ error: 'test', pump: null })
           done()
         .start()
 
