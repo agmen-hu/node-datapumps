@@ -1,20 +1,13 @@
-EventEmitter = require('events').EventEmitter
 Promise = require('bluebird')
 Pump = require('./Pump')
 Buffer = require('./Buffer')
 
-module.exports = class Group extends EventEmitter
-  @STOPPED: 0
-  @STARTED: 1
-  @PAUSED: 2
-  @ENDED: 3
+module.exports = class Group extends Pump
 
   constructor: ->
+    super()
     @_pumps = {}
     @_exposedBuffers = {}
-    @_state = Group.STOPPED
-    @_errorBuffer = new Buffer
-    @_id = null
 
   addPump: (name, pump = null) ->
     throw new Error 'Pump already exists' if @_pumps[name]?
@@ -35,7 +28,9 @@ module.exports = class Group extends EventEmitter
     throw new Error 'Group already started' if @_state != Group.STOPPED
     @_state = Group.STARTED
     @_registerErrorBufferEvents()
-    pump.errorBuffer @_errorBuffer for name, pump of @_pumps
+    for name, pump of @_pumps
+      pump.errorBuffer @_errorBuffer
+      pump.debug @_debug
     @run()
       .then => @_endGroup()
     @
@@ -70,29 +65,6 @@ module.exports = class Group extends EventEmitter
     for name, pump of @_pumps
       result.push name if pump.isStopped()
     result
-
-  isStopped: ->
-    @_state == Group.STOPPED
-
-  isStarted: ->
-    @_state == Group.STARTED
-
-  isPaused: ->
-    @_state == Group.PAUSED
-
-  isEnded: ->
-    @_state == Group.ENDED
-
-  whenFinished: ->
-    if @isEnded()
-      Promise.resolve()
-    else
-      return new Promise (resolve, reject) =>
-        @on 'end', -> resolve()
-        @on 'error', -> reject 'Pumping failed. See .errorBuffer() contents for error messages'
-
-  createBuffer: (options = {}) ->
-    new Buffer options
 
   expose: (exposedName, bufferPath) ->
     throw new Error "Already exposed a buffer with name #{exposedName}" if @_exposedBuffers[exposedName]?
@@ -134,11 +106,6 @@ module.exports = class Group extends EventEmitter
   process: ->
     throw new Error 'Cannot call .process() on a group: data in a group is transformed by its pumps.'
 
-  errorBuffer: (buffer = null) ->
-    return @_errorBuffer if buffer == null
-    @_errorBuffer = buffer
-    @
-
   pause: ->
     return if @_state == Group.PAUSED
     throw new Error 'Cannot .pause() a group that is not pumping' if @_state != Group.STARTED
@@ -157,16 +124,4 @@ module.exports = class Group extends EventEmitter
     return @_id if id == null
     @_id = id
     pump.id "#{@_id}/#{name}" for name, pump of @_pumps
-    @
-
-  logErrorsToConsole: ->
-    @errorBuffer().on 'write', (error) ->
-      name = error.pump ? '(root)'
-      console.log "Error: pump #{name}: #{error.message}"
-    @
-
-  writeError: (err) ->
-    @_errorBuffer.write
-      message: err
-      pump: @_id
     @
