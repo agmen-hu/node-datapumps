@@ -182,7 +182,7 @@ module.exports = class Pump extends EventEmitter
       @on 'error', -> reject 'Pumping failed. See .errorBuffer() contents for error messages'
 
   logErrorsToConsole: ->
-    @errorBuffer().on 'write', (errorRecord) ->
+    @errorBuffer().on 'write', (errorRecord) =>
       name = errorRecord.pump ? '(root)'
       if @_debug
         console.log "Error in pump #{name}:"
