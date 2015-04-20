@@ -125,3 +125,7 @@ module.exports = class Group extends Pump
     @_id = id
     pump.id "#{@_id}/#{name}" for name, pump of @_pumps
     @
+
+  debugMode: (@_debug) ->
+    throw new Error 'Cannot change debug mode after pump start' if @_state != Pump.STOPPED
+    @
