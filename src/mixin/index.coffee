@@ -8,3 +8,4 @@ module.exports =
   MysqlMixin: require './MysqlMixin'
   MongodbMixin: require './MongodbMixin'
   RestMixin: require './RestMixin'
+  BufferDebugMixin: require './BufferDebugMixin'

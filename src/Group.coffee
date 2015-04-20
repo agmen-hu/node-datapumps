@@ -30,7 +30,7 @@ module.exports = class Group extends Pump
     @_registerErrorBufferEvents()
     for name, pump of @_pumps
       pump.errorBuffer @_errorBuffer
-      pump.debug @_debug
+      pump.debugMode @_debug
     @run()
       .then => @_endGroup()
     @

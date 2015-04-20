@@ -1,6 +1,7 @@
 EventEmitter = require('events').EventEmitter
 Promise = require('bluebird')
 Buffer = require('./Buffer')
+BufferDebugMixin = require './mixin/BufferDebugMixin'
 
 module.exports = class Pump extends EventEmitter
   @STOPPED: 0
@@ -81,7 +82,7 @@ module.exports = class Pump extends EventEmitter
   start: ->
     throw new Error 'Source is not configured' if !@_from
     throw new Error 'Pump is already started' if @_state != Pump.STOPPED
-    console.log "Pump #{@_id} started" if @_debug
+    console.log "Pump #{@_id ? '(root)'} started" if @_debug
     @_state = Pump.STARTED
     for name, buffer of @_buffers
       buffer.on 'end', @_outputBufferEnded.bind @
@@ -191,7 +192,11 @@ module.exports = class Pump extends EventEmitter
         console.log "Error in pump #{name}: #{errorRecord.error}"
     @
 
-  debug: (value = null) ->
-    return @_debug if value is null
-    @_debug = value
+  debug: ->
+    @debugMode true
+    @
+
+  debugMode: (@_debug) ->
+    throw new Error 'Cannot change debug mode after pump start' if @_state != Pump.STOPPED
+    @mixin BufferDebugMixin if @_debug
     @
