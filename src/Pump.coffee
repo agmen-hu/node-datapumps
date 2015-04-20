@@ -82,7 +82,7 @@ module.exports = class Pump extends EventEmitter
   start: ->
     throw new Error 'Source is not configured' if !@_from
     throw new Error 'Pump is already started' if @_state != Pump.STOPPED
-    console.log "Pump #{@_id ? '(root)'} started" if @_debug
+    console.log "#{(new Date()).toISOString() } [#{@_id ? '(root)'}] Pump started" if @_debug
     @_state = Pump.STARTED
     for name, buffer of @_buffers
       buffer.on 'end', @_outputBufferEnded.bind @
@@ -96,7 +96,7 @@ module.exports = class Pump extends EventEmitter
     return if !allEnded
 
     @_state = Pump.ENDED
-    console.log "Pump #{@_id} ended" if @_debug
+    console.log "#{(new Date()).toISOString() } [#{@_id ? '(root)'}] Pump ended" if @_debug
     @emit 'end'
 
   _pump: ->

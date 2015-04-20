@@ -15,6 +15,8 @@ module.exports = (pump) ->
     collectBuffers()
     listenToBuffersEvents()
     monitorBuffers()
+    pump.whenFinished()
+      .then -> dumpStats()
     @
 
   collectBuffers = ->
@@ -35,16 +37,20 @@ module.exports = (pump) ->
 
   monitorBuffers = ->
     delay 1000, ->
-      dumpStats()
+      dumpStatsIfNotEnded()
       clearBufferStats()
       monitorBuffers() if !pump.isEnded()
 
   delay = (ms, func) -> setTimeout func, ms
 
+  dumpStatsIfNotEnded = ->
+    return if pump.isEnded()
+    dumpStats()
+
   dumpStats = ->
     return if !hadTraffic()
 
-    process.stdout.write "[#{pump.id() ? '(root)'}] "
+    process.stdout.write "#{(new Date()).toISOString() } [#{pump.id() ? '(root)'}] "
     for name, buffer of _bufferStats
       process.stdout.write "#{name}: #{buffer.buffer.getContent().length} items, #{buffer.writes} in, #{buffer.releases} out | "
     process.stdout.write "\n"
