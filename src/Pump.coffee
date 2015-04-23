@@ -202,3 +202,12 @@ module.exports = class Pump extends EventEmitter
     throw new Error 'Cannot change debug mode after pump start' if @_state != Pump.STOPPED
     @mixin BufferDebugMixin if @_debug
     @
+
+  run: ->
+    @start().whenFinished()
+      .then =>
+        result = {}
+        for name, buffer of @_buffers
+          result[name] = buffer.getContent()
+
+        return result

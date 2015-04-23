@@ -70,9 +70,9 @@ describe 'Pump', ->
         .start()
 
     it 'should create error buffer on start if not set', ->
-      pump = new Pump
-      pump.from new Buffer
-      pump.start()
+      (pump = new Pump)
+        .from new Buffer
+        .start()
       pump.errorBuffer().should.not.be.null
 
     it 'should write errors to the error buffer', (done) ->
@@ -81,18 +81,17 @@ describe 'Pump', ->
         .errorBuffer new Buffer
         .process ->
           Promise.reject('test')
-        .on 'end', ->
-          pump.errorBuffer().getContent().length.should.equal 1
-          pump.errorBuffer().getContent()[0].should.eql { error: 'test', pump: null }
-          done()
-        .start()
+        .run()
+          .then ->
+            pump.errorBuffer().getContent().length.should.equal 1
+            pump.errorBuffer().getContent()[0].should.eql { error: 'test', pump: null }
+            done()
 
     it 'should write error when process does not return a Promise', (done) ->
       (pump = new Pump)
         .from [ 'x' ]
         .process (data) -> data
-        .start()
-        .whenFinished()
+        .run()
           .then ->
             pump.errorBuffer().getContent().length.should.equal 1
             done()
