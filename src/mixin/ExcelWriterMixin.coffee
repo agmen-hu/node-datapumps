@@ -65,7 +65,8 @@
 #
 # Based on excel4node (https://github.com/natergj/excel4node).
 #
-excel4node = require('excel4node')
+excel4node = require 'excel4node'
+Promise = require 'bluebird'
 
 ExcelWriterMixin = (onMixin) ->
   (target) ->
@@ -84,6 +85,7 @@ ExcelWriterMixin = (onMixin) ->
         @_excel.workbook.write @_excel.path
 
       @_excel.workbook
+      @
 
     # Set or get workbook
     target.workbook = (workbook = null) ->
@@ -135,8 +137,8 @@ ExcelWriterMixin = (onMixin) ->
         cell = @_excel.worksheet.Cell(@_excel.currentRow, index + 1)
         cell[@_excel.columnTypes[index] ? 'String'](value)
       @_excel.currentRow++
-      @
+      Promise.resolve()
 
-    onMixin.apply(target, [ target ])
+    onMixin.apply(target, [ target ]) if onMixin
 
 module.exports = ExcelWriterMixin
