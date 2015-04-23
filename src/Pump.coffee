@@ -1,6 +1,6 @@
 EventEmitter = require('events').EventEmitter
-Promise = require('bluebird')
-Buffer = require('./Buffer')
+Promise = require 'bluebird'
+Buffer = require './Buffer'
 BufferDebugMixin = require './mixin/BufferDebugMixin'
 
 module.exports = class Pump extends EventEmitter
