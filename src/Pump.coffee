@@ -108,6 +108,8 @@ module.exports = class Pump extends EventEmitter
       .then (data) =>
         @currentRead = null
         @_processing = @_process data, @
+        throw new Error ".process() did not return a Promise" if not (@_processing instanceof Promise)
+        return @_processing
       .catch(Promise.CancellationError, ->)
       .catch (err) => @writeError err
       .done => do @_pump

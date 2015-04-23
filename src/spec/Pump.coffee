@@ -95,6 +95,16 @@ describe 'Pump', ->
           done()
         .start()
 
+    it 'should write error when process does not return a Promise', (done) ->
+      (pump = new Pump)
+        .from [ 'x' ]
+        .process (data) -> data
+        .start()
+        .whenFinished()
+          .then ->
+            pump.errorBuffer().getContent().length.should.equal 1
+            done()
+
   it 'should seal output buffers when source buffer ends', (done) ->
     source = new Buffer
 
