@@ -132,7 +132,7 @@ module.exports = class Pump extends EventEmitter
       Promise.all(@buffer(buffer).writeAsync data for buffer in buffers)
 
   process: (fn) ->
-    throw new Error('Process must be a function') if typeof fn != 'function'
+    throw new Error('.process() argument must be a Promise returning function ') if typeof fn != 'function'
     @_process = fn
     @
 
