@@ -50,7 +50,9 @@ module.exports = BatchProcessMixin = (target) ->
     if @_batch.length >= @_batchSize
       result = @_processBatch(@_batch)
       @_batch = []
-      result
+      return result
+    else
+      Promise.resolve()
 
   pumpMethod = target._pump
   target._pump = ->

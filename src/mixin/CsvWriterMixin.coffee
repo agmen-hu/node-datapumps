@@ -44,16 +44,17 @@
 #     ]
 # ```
 #
-csv = require('fast-csv')
-fs = require('fs')
+csv = require 'fast-csv'
+fs = require 'fs'
+Promise = require 'bluebird'
 
 CsvWriterMixin = (options) ->
   throw new Error 'path option is required.' if !options?.path
 
   (target) ->
-    # Writes a row in the csv file.
+
     target.writeRow = (row) ->
-      target._csv.writer.write(row)
+      Promise.resolve target._csv.writer.write(row)
 
     target._csv = options
     target._csv.writer = csv.createWriteStream()
