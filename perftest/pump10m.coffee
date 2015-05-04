@@ -26,13 +26,11 @@ describe 'Pump (performance test)', ->
         pumped++
         if !(pumped % 1000000)
           console.log 'Pumped ' + (pumped / 1000000) + ' million items'
-        @copy data
-
-    pump.on 'end', ->
-      if pumped == limit && created == limit
-        do done
-      else
-        throw new Error('Pump failed')
+        @buffer().writeArrayAsync [ data, data ]
+      .logErrorsToConsole()
+      .whenFinished()
+        .then -> do done
+        .catch -> console.log "Pumping failed"
 
     write = ->
       source.write
