@@ -49,6 +49,7 @@ class Buffer extends EventEmitter
           resolve @writeAsync data
 
   writeArrayAsync: (dataArray) ->
+    return Promise.resolve() if dataArray.length is 0
     result = Promise.pending()
     @_writeArrayItem dataArray, result
 
