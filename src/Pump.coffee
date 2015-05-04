@@ -84,10 +84,17 @@ module.exports = class Pump extends EventEmitter
     throw new Error 'Pump is already started' if @_state != Pump.STOPPED
     console.log "#{(new Date()).toISOString() } [#{@_id ? '(root)'}] Pump started" if @_debug
     @_state = Pump.STARTED
+    @_registerErrorBufferEvents()
     for name, buffer of @_buffers
       buffer.on 'end', @_outputBufferEnded.bind @
     do @_pump
     @
+
+  _registerErrorBufferEvents: ->
+    @_errorBuffer.on 'full', =>
+      if @_state == Pump.STARTED
+        @pause()
+          .then => @emit 'error'
 
   _outputBufferEnded: ->
     allEnded = true

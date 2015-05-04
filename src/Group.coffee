@@ -39,12 +39,6 @@ module.exports = class Group extends Pump
     @_state = Group.ENDED
     @emit 'end'
 
-  _registerErrorBufferEvents: ->
-    @_errorBuffer.on 'full', =>
-      if @_state == Group.STARTED
-        @pause()
-          .then => @emit 'error'
-
   run: ->
     (result = @runPumps())
       .catch -> # The runpumps promise is only rejected when the error buffer is full and
