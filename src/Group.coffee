@@ -114,6 +114,11 @@ module.exports = class Group extends Pump
     do pump.resume for name, pump of @_pumps
     @
 
+  abort: ->
+    throw new Error 'Cannot .abort() a group that is not running' if @_state != Pump.STARTED
+    Promise.all (pump.abort() for name, pump of @_pumps when pump.isStarted())
+      .then => @_state = Group.ABORTED
+
   id: (id = null) ->
     return @_id if id == null
     @_id = id
