@@ -51,15 +51,15 @@ class Buffer extends EventEmitter
   writeArrayAsync: (dataArray) ->
     return Promise.resolve() if dataArray.length is 0
     result = Promise.pending()
-    @_writeArrayItem dataArray, result
+    @_writeArrayItem dataArray, result, 0
 
     result.promise
 
-  _writeArrayItem: (dataArray, pendingPromise) ->
-    @writeAsync dataArray.shift()
+  _writeArrayItem: (dataArray, pendingPromise, index) ->
+    @writeAsync dataArray[index]
       .done =>
-        return pendingPromise.resolve() if dataArray.length is 0
-        @_writeArrayItem dataArray, pendingPromise
+        return pendingPromise.resolve() if index >= dataArray.length - 1
+        @_writeArrayItem dataArray, pendingPromise, index + 1
 
   read: ->
     throw new Error('Buffer is empty') if @isEmpty()
