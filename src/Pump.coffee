@@ -99,8 +99,7 @@ module.exports = class Pump extends EventEmitter
 
   abort: ->
     throw new Error 'Cannot .abort() a pump that is not running' if @_state != Pump.STARTED
-    if @_processing? and @_processing.isPending()
-      @_processing.cancel()
+    @_processing.cancel() if @_processing?.isPending()
     @pause()
       .then => @_state = Pump.ABORTED
 
@@ -123,7 +122,9 @@ module.exports = class Pump extends EventEmitter
       .then (data) =>
         @currentRead = null
         @_processing = @_process data, @
-        throw new Error ".process() did not return a Promise" if not (@_processing instanceof Promise)
+        if not (@_processing instanceof Promise)
+          @_processing = undefined
+          throw new Error ".process() did not return a Promise"
         return @_processing.cancellable()
       .catch(Promise.CancellationError, ->)
       .catch (err) => @writeError err
@@ -180,7 +181,7 @@ module.exports = class Pump extends EventEmitter
   pause: ->
     return if @_state == Pump.PAUSED
     throw new Error 'Cannot .pause() a pump that is not running' if @_state != Pump.STARTED
-    if @_processing? and Promise.resolve(@_processing).isPending()
+    if @_processing?.isPending()
       @_processing.then => @_state = Pump.PAUSED
     else
       @_state = Pump.PAUSED
