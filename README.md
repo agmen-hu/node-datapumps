@@ -11,34 +11,39 @@ $ npm install datapumps --save
 
 ## Usage example: export mongodb to excel
 ```js
-var dp = require('datapumps');
+var
+  datapumps = require('./index'),
+  Pump = datapumps.Pump,
+  MongodbMixin = datapumps.mixin.MongodbMixin,
+  ExcelWriterMixin = datapumps.mixin.ExcelWriterMixin,
+  pump = new Pump();
 
-var pump = new dp.Pump()
 pump
-  .mixin(dp.mixin.MongodbMixin('mongodb://localhost/marketing'))
+  .mixin(MongodbMixin('mongodb://localhost/marketing'))
   .useCollection('Contact')
   .from(pump.find({ country: "US" }))
-  .mixin(dp.mixin.ExcelWriterMixin(function() {
-    pump.createWorkbook('/tmp/ContactsInUs.xlsx');
-    pump.createWorksheet('Contacts');
-    pump.writeHeaders(['Name', 'Email']);
-  }))
+
+  .mixin(ExcelWriterMixin())
+  .createWorkbook('/tmp/ContactsInUs.xlsx')
+  .createWorksheet('Contacts')
+  .writeHeaders(['Name', 'Email'])
+
   .process(function(contact) {
     return pump.writeRow([ contact.name, contact.email ]);
   })
   .logErrorsToConsole()
-  .start()
-  .whenFinished().then(function() {
-    console.log("Done writing contacts to file");
-  });
+  .run()
+    .then(function() {
+      console.log("Done writing contacts to file");
+    });
 ```
 
 Usage example with more details:
  * First, we create a pump and setup reading from mongodb
    ```js
-   var pump = new dp.Pump()
+   var pump = new Pump();
    pump
-     .mixin(dp.mixin.MongodbMixin('mongodb://localhost/marketing'))
+     .mixin(MongodbMixin('mongodb://localhost/marketing'))
      .useCollection('Contact')
      .from(pump.find({ country: "US" }))
    ```
@@ -50,17 +55,19 @@ Usage example with more details:
  * Write data to excel with [ExcelWriterMixin](http://agmen-hu.github.io/node-datapumps/docs/mixin/ExcelWriterMixin.html):
    ```js
    pump
-     .mixin(dp.mixin.ExcelWriterMixin(function() {
-       pump.createWorkbook('/tmp/ContactsInUs.xlsx');
-       pump.createWorksheet('Contacts');
-       pump.writeHeaders(['Name', 'Email']);
-     }))
+     .mixin(ExcelWriterMixin())
+     .createWorkbook('/tmp/ContactsInUs.xlsx')
+     .createWorksheet('Contacts')
+     .writeHeaders(['Name', 'Email'])
+
      .process(function(contact) {
        return pump.writeRow([ contact.name, contact.email ]);
      })
    ```
-   The excel workbook, worksheet and header rows are created when adding the mixin to the pump.
-   The callback given in `.process()` may transform or filter data and should return a [promise](https://promisesaplus.com/) (we use [bluebird](https://github.com/petkaantonov/bluebird)
+   The excel workbook, worksheet and header rows are created after adding
+   [ExcelWriterMixin](http://agmen-hu.github.io/node-datapumps/docs/mixin/ExcelWriterMixin.html) to the pump.
+   Each pump has a `.process()` callback that may transform or filter data. The callback is called for every data item of the
+   buffer and should return a [promise](https://promisesaplus.com/) (we use [bluebird](https://github.com/petkaantonov/bluebird)
    library) that fulfills when the data is processed. In this example, the default processing callback
    (which copies data to the output buffer by default) is overridden with writing rows to the excel
    worksheet.
@@ -69,14 +76,13 @@ Usage example with more details:
    ```js
    pump
      .logErrorsToConsole()
-     .start()
-     .whenFinished().then(function() {
-       console.log("Done writing contacts to file");
-     });
+     .run()
+       .then(function() {
+         console.log("Done writing contacts to file");
+       });
    ```
    The `.logErrorsToConsole()` will log any error to the console, surprisingly. The pump will start
-   when the `.start()` method is called. The `.whenFinished()` method returns a
-   [promise](https://promisesaplus.com/) that resolves when the pump finished.
+   on callung `.run()`. It returns a [promise](https://promisesaplus.com/) that resolves when the pump finished.
 
 ## Pump
 A pump reads data from its input buffer or stream and copies it to the output buffer by default:
@@ -84,7 +90,7 @@ A pump reads data from its input buffer or stream and copies it to the output bu
 datapumps = require('datapumps');
 (pump = new datapumps.Pump())
   .from(<put a nodejs stream or datapumps buffer here>)
-  .start()
+  .run()
 ```
 
 To access the output buffer, use the `.buffer()` method, which returns a Buffer instance:
