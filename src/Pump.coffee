@@ -205,7 +205,7 @@ module.exports = class Pump extends EventEmitter
       name = errorRecord.pump ? '(root)'
       if @_debug
         console.log "Error in pump #{name}:"
-        console.log errorRecord.error.stack
+        console.log errorRecord.error.stack ? errorRecord.error
       else
         console.log "Error in pump #{name}: #{errorRecord.error}"
     @
