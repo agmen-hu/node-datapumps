@@ -12,7 +12,7 @@ $ npm install datapumps --save
 ## Usage example: export mongodb to excel
 ```js
 var
-  datapumps = require('./index'),
+  datapumps = require('datapumps'),
   Pump = datapumps.Pump,
   MongodbMixin = datapumps.mixin.MongodbMixin,
   ExcelWriterMixin = datapumps.mixin.ExcelWriterMixin,
