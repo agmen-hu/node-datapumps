@@ -54,6 +54,11 @@ module.exports = (db) ->
     _wrapMethod target, name for name in _wrappedMethods
     _wrapFind target
 
+    target.setGlobalDefaultMaxBsonSize = (size) ->
+     require('mongodb').Connection.DEFAULT_MAX_BSON_SIZE = size
+     require('mongodb').Connection.DEFAULT_MAX_MESSAGE_SIZE = size
+     @
+
     target.db = ->
       @_mongo.db
 
