@@ -82,7 +82,7 @@ Usage example with more details:
        });
    ```
    The `.logErrorsToConsole()` will log any error to the console, surprisingly. The pump will start
-   on callung `.run()`. It returns a [promise](https://promisesaplus.com/) that resolves when the pump finished.
+   on calling `.run()`. It returns a [promise](https://promisesaplus.com/) that resolves when the pump finished.
 
 ## Pump
 A pump reads data from its input buffer or stream and copies it to the output buffer by default:
