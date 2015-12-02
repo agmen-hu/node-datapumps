@@ -42,7 +42,7 @@ module.exports = class Pump extends EventEmitter
       @_from.on 'release', -> buffer.resume()
     else if buffer instanceof Array
       @_from = new Buffer
-        content: buffer
+        content: buffer.slice 0
         sealed: true
     else
       throw new Error 'Argument must be datapumps.Buffer or stream'
