@@ -32,6 +32,7 @@ module.exports = (pump) ->
   listenToBuffersEvents = ->
     for name, buffer of _bufferStats
       do (buffer) ->
+        return if !buffer.buffer
         buffer.buffer.on 'write', -> buffer.writes++
         buffer.buffer.on 'release', -> buffer.releases++
 
