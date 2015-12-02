@@ -221,9 +221,3 @@ module.exports = class Pump extends EventEmitter
 
   run: ->
     @start().whenFinished()
-      .then =>
-        result = {}
-        for name, buffer of @_buffers
-          result[name] = buffer.getContent()
-
-        return result
