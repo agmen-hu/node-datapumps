@@ -121,7 +121,10 @@ module.exports = class Pump extends EventEmitter
       .cancellable()
       .then (data) =>
         @currentRead = null
-        @_processing = Promise.resolve(@_process data, @)        
+        @_processing = @_process data, @
+        if typeof @_processing.then isnt "function"
+          @_processing = undefined
+          throw new Error ".process() did not return a Promise" 
         return @_processing.cancellable()
       .catch(Promise.CancellationError, ->)
       .catch (err) => @writeError err
