@@ -122,9 +122,9 @@ module.exports = class Pump extends EventEmitter
       .then (data) =>
         @currentRead = null
         @_processing = @_process data, @
-        if not (@_processing instanceof Promise)
+        if typeof @_processing.then isnt "function"
           @_processing = undefined
-          throw new Error ".process() did not return a Promise"
+          throw new Error ".process() did not return a Promise" 
         return @_processing.cancellable()
       .catch(Promise.CancellationError, ->)
       .catch (err) => @writeError err
@@ -148,7 +148,7 @@ module.exports = class Pump extends EventEmitter
       Promise.all(@buffer(buffer).writeAsync data for buffer in buffers)
 
   process: (fn) ->
-    throw new Error('.process() argument must be a Promise returning function ') if typeof fn != 'function'
+    throw new Error('.process() argument must be a function ') if typeof fn != 'function'
     @_process = fn
     @
 
