@@ -54,10 +54,10 @@ CsvWriterMixin = (options) ->
   (target) ->
 
     target.writeRow = (row) ->
-      Promise.resolve target._csv.writer.write(row)
+      target._csv.writer.writeAsync(row)
 
     target._csv = options
-    target._csv.writer = csv.createWriteStream()
+    target._csv.writer = Promise.promisifyAll(csv.createWriteStream())
     target._csv.writer.pipe fs.createWriteStream target._csv.path, {encoding: 'utf8'}
     if target._csv.headers?
       target.writeRow target._csv.headers
