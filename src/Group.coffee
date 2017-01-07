@@ -1,5 +1,6 @@
 Promise = require('bluebird')
 Pump = require('./Pump')
+PumpingFailedError = require './PumpingFailedError'
 Buffer = require('./Buffer')
 
 module.exports = class Group extends Pump
@@ -33,6 +34,7 @@ module.exports = class Group extends Pump
       pump.debugMode @_debug
     @run()
       .then => @_endGroup()
+      .catch (PumpingFailedError, e) ->  # All errors are in the errorbuffer now, so we can safely discard this error
     @
 
   _endGroup: ->
@@ -41,9 +43,7 @@ module.exports = class Group extends Pump
 
   run: ->
     (result = @runPumps())
-      .catch -> # The runpumps promise is only rejected when the error buffer is full and
-                # the sub-group is stopped. All errors are in the errorbuffer now, so we can
-                # safely discard this error
+      .catch (PumpingFailedError, e) -> # All errors are in the errorbuffer now, so we can safely discard this error
     result
 
   runPumps: (pumps = null) ->

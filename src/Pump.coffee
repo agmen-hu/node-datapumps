@@ -1,6 +1,7 @@
 EventEmitter = require('events').EventEmitter
 Promise = require 'bluebird'
 Buffer = require './Buffer'
+PumpingFailedError = require './PumpingFailedError'
 BufferDebugMixin = require './mixin/BufferDebugMixin'
 
 module.exports = class Pump extends EventEmitter
@@ -8,7 +9,7 @@ module.exports = class Pump extends EventEmitter
   @STARTED: 1
   @PAUSED: 2
   @ENDED: 3
-  @ABORTED: 3
+  @ABORTED: 4
 
   constructor: ->
     @_state = Pump.STOPPED
@@ -98,10 +99,14 @@ module.exports = class Pump extends EventEmitter
           .then => @emit 'error'
 
   abort: ->
+    return if @_state == Pump.ABORTED
     throw new Error 'Cannot .abort() a pump that is not running' if @_state != Pump.STARTED
-    @_processing.cancel() if @_processing?.isPending()
-    @pause()
-      .then => @_state = Pump.ABORTED
+    @_state = Pump.ABORTED
+    if @_processing?.isPending()
+      @_processing.cancel()
+        .catch (err) ->
+    else
+      Promise.resolve()
 
   _outputBufferEnded: ->
     allEnded = true
@@ -115,7 +120,7 @@ module.exports = class Pump extends EventEmitter
 
   _pump: ->
     return @sealOutputBuffers() if @_from.isEnded()
-    return if @_state == Pump.PAUSED
+    return if @_state == Pump.PAUSED or @_state == Pump.ABORTED
 
     (@currentRead = @_from.readAsync())
       .cancellable()
@@ -200,7 +205,7 @@ module.exports = class Pump extends EventEmitter
 
     new Promise (resolve, reject) =>
       @on 'end', -> resolve()
-      @on 'error', -> reject 'Pumping failed. See .errorBuffer() contents for error messages'
+      @on 'error', -> reject new PumpingFailedError()
 
   logErrorsToConsole: ->
     @errorBuffer().on 'write', (errorRecord) =>

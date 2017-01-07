@@ -3,6 +3,7 @@ sinon = require('sinon')
 Group = require('../Group')
 Buffer = require('../Buffer')
 Pump = require('../Pump')
+Promise = require('bluebird')
 
 describe 'Group', ->
   describe '#addPump(name)', ->
@@ -193,3 +194,32 @@ describe 'Group', ->
       group.id 'group'
 
       group.pump('test').id().should.equal 'group/test'
+
+  it 'should abort pumps when error buffer is full', (done) ->
+    class G1 extends Group
+      constructor: (buffer) ->
+        super()
+        @errorBuffer buffer
+        @addPump 'p1'
+          .from [ 1, 2, 3 ]
+        @addPump 'p2'
+          .from @pump 'p1'
+          .process (item) ->
+            console.log item
+            throw new Error item
+            Promise.resolve console.log item
+
+    class G2 extends Group
+      constructor: (buffer) ->
+        super()
+        @errorBuffer buffer
+        @addPump 'g1', new G1 buffer
+        @addPump 'x'
+          .from [ 1, 2, 3, 4, 5, 6, 7, 8, 9 ]
+          .process ->
+            Promise.delay 300
+
+    g2 = new G2 new Buffer size: 1
+    g2.start().whenFinished()
+      .catch (err) ->
+        done() if err.message is 'Pumping failed. See .errorBuffer() contents for error messages'
