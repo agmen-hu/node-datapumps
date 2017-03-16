@@ -21,7 +21,7 @@
     "coffee-script": "^1.7.1",
     "excel4node": "~0.0.9",
     "fast-csv": "~0.5.2",
-    "mongodb": "^1.4.9",
+    "mongodb": "^2.2.24",
     "mysql": "~2.5.1",
     "xlsx": "~0.7.8",
     "restler": "~3.2.2"
