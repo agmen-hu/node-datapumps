@@ -23,8 +23,9 @@
     "fast-csv": "~0.5.2",
     "mongodb": "^2.2.24",
     "mysql": "~2.5.1",
-    "xlsx": "~0.7.8",
-    "restler": "~3.2.2"
+    "pg": "^6.1.5",
+    "restler": "~3.2.2",
+    "xlsx": "~0.7.8"
   },
   "devDependencies": {
     "grunt": "~0.4.1",
