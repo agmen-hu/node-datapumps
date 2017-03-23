@@ -15,11 +15,11 @@
 #      .mixin PostgresqlMixin postgresqlClient
 #    ```
 #
-#  * Use `.query()` method of the pump in `.process()` and wrap in a QueryStream from `pg-query-stream`
+#  * Use `.query()` method of the pump in `.process()`
 #    ```coffee
 #    pump
 #      .process (data) ->
-#        @query new QueryStream 'INSERT INTO customer (name, address) VALUES ($1, $2)', [ data.name, data.address ]
+#        @query 'INSERT INTO customer (name, address) VALUES ($1, $2)', [ data.name, data.address ]
 #    ```
 #    The method returns a promise, so
 #    you can use it `.process()` callbacks (note that `.process()` callback must return a promise).
