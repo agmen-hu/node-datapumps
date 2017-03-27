@@ -24,6 +24,11 @@
               </a>
             
               
+              <a class="source" href="BufferDebugMixin.html">
+                BufferDebugMixin.coffee
+              </a>
+            
+              
               <a class="source" href="CsvWriterMixin.html">
                 CsvWriterMixin.coffee
               </a>
@@ -56,6 +61,11 @@
               
               <a class="source" href="ObjectTransformMixin.html">
                 ObjectTransformMixin.coffee
+              </a>
+            
+              
+              <a class="source" href="PostgresqlMixin.html">
+                PostgresqlMixin.coffee
               </a>
             
               
@@ -148,7 +158,8 @@ customersExcelSheet
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>excel4node = <span class="hljs-built_in">require</span>(<span class="hljs-string">'excel4node'</span>)
+            <div class="content"><div class='highlight'><pre>excel4node = <span class="hljs-built_in">require</span> <span class="hljs-string">'excel4node'</span>
+Promise = <span class="hljs-built_in">require</span> <span class="hljs-string">'bluebird'</span>
 
 <span class="hljs-function"><span class="hljs-title">ExcelWriterMixin</span> = <span class="hljs-params">(onMixin)</span> -&gt;</span>
   <span class="hljs-function"><span class="hljs-params">(target)</span> -&gt;</span></pre></div></div>
@@ -191,7 +202,8 @@ customersExcelSheet
       <span class="hljs-property">@on</span> <span class="hljs-string">'end'</span>,<span class="hljs-function"> =&gt;</span>
         <span class="hljs-property">@_excel</span>.workbook.write <span class="hljs-property">@_excel</span>.path
 
-      <span class="hljs-property">@_excel</span>.workbook</pre></div></div>
+      <span class="hljs-property">@_excel</span>.workbook
+      @</pre></div></div>
             
         </li>
         
@@ -303,9 +315,9 @@ customersExcelSheet
         cell = <span class="hljs-property">@_excel</span>.worksheet.Cell(<span class="hljs-property">@_excel</span>.currentRow, index + <span class="hljs-number">1</span>)
         cell[<span class="hljs-property">@_excel</span>.columnTypes[index] ? <span class="hljs-string">'String'</span>](value)
       <span class="hljs-property">@_excel</span>.currentRow++
-      @
+      Promise.resolve()
 
-    onMixin.apply(target, [ target ])
+    onMixin.apply(target, [ target ]) <span class="hljs-keyword">if</span> onMixin
 
 <span class="hljs-built_in">module</span>.exports = ExcelWriterMixin</pre></div></div>
             

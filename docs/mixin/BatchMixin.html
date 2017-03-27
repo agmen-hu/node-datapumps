@@ -24,6 +24,11 @@
               </a>
             
               
+              <a class="source" href="BufferDebugMixin.html">
+                BufferDebugMixin.coffee
+              </a>
+            
+              
               <a class="source" href="CsvWriterMixin.html">
                 CsvWriterMixin.coffee
               </a>
@@ -56,6 +61,11 @@
               
               <a class="source" href="ObjectTransformMixin.html">
                 ObjectTransformMixin.coffee
+              </a>
+            
+              
+              <a class="source" href="PostgresqlMixin.html">
+                PostgresqlMixin.coffee
               </a>
             
               
@@ -137,13 +147,16 @@ pump.batchSize() <span class="hljs-comment"># return 10000</span>
     <span class="hljs-keyword">if</span> <span class="hljs-property">@_batch</span>.length &gt;= <span class="hljs-property">@_batchSize</span>
       result = <span class="hljs-property">@_processBatch</span>(<span class="hljs-property">@_batch</span>)
       <span class="hljs-property">@_batch</span> = []
-      result
+      <span class="hljs-keyword">return</span> result
+    <span class="hljs-keyword">else</span>
+      Promise.resolve()
 
   pumpMethod = target._pump
   target.<span class="hljs-function"><span class="hljs-title">_pump</span> = -&gt;</span>
     <span class="hljs-keyword">if</span> <span class="hljs-property">@_from</span>.isEnded()
       <span class="hljs-keyword">if</span> <span class="hljs-property">@_batch</span>.length &gt; <span class="hljs-number">0</span>
         Promise.resolve(<span class="hljs-property">@_processBatch</span>(<span class="hljs-property">@_batch</span>))
+          .<span class="hljs-keyword">catch</span> <span class="hljs-function"><span class="hljs-params">(err)</span> =&gt;</span> <span class="hljs-property">@writeError</span> err
           .<span class="hljs-keyword">then</span><span class="hljs-function"> =&gt;</span> <span class="hljs-property">@sealOutputBuffers</span>()
       <span class="hljs-keyword">else</span>
         <span class="hljs-property">@sealOutputBuffers</span>()

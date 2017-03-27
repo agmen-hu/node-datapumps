@@ -24,6 +24,11 @@
               </a>
             
               
+              <a class="source" href="BufferDebugMixin.html">
+                BufferDebugMixin.coffee
+              </a>
+            
+              
               <a class="source" href="CsvWriterMixin.html">
                 CsvWriterMixin.coffee
               </a>
@@ -56,6 +61,11 @@
               
               <a class="source" href="ObjectTransformMixin.html">
                 ObjectTransformMixin.coffee
+              </a>
+            
+              
+              <a class="source" href="PostgresqlMixin.html">
+                PostgresqlMixin.coffee
               </a>
             
               
@@ -131,13 +141,23 @@
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>csv = <span class="hljs-built_in">require</span>(<span class="hljs-string">'fast-csv'</span>)
-fs = <span class="hljs-built_in">require</span>(<span class="hljs-string">'fs'</span>)
+            <div class="content"><div class='highlight'><pre>csv = <span class="hljs-built_in">require</span> <span class="hljs-string">'fast-csv'</span>
+fs = <span class="hljs-built_in">require</span> <span class="hljs-string">'fs'</span>
+Promise = <span class="hljs-built_in">require</span> <span class="hljs-string">'bluebird'</span>
 
 <span class="hljs-function"><span class="hljs-title">CsvWriterMixin</span> = <span class="hljs-params">(options)</span> -&gt;</span>
   <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> Error <span class="hljs-string">'path option is required.'</span> <span class="hljs-keyword">if</span> !options?.path
 
-  <span class="hljs-function"><span class="hljs-params">(target)</span> -&gt;</span></pre></div></div>
+  <span class="hljs-function"><span class="hljs-params">(target)</span> -&gt;</span>
+
+    target.<span class="hljs-function"><span class="hljs-title">writeRow</span> = <span class="hljs-params">(row)</span> -&gt;</span>
+      target._csv.writer.writeAsync(row)
+
+    target._csv = options
+    target._csv.writer = Promise.promisifyAll(csv.createWriteStream())
+    target._csv.writer.pipe fs.createWriteStream target._csv.path, {<span class="hljs-attribute">encoding</span>: <span class="hljs-string">'utf8'</span>}
+    <span class="hljs-keyword">if</span> target._csv.headers?
+      target.writeRow target._csv.headers</pre></div></div>
             
         </li>
         
@@ -147,28 +167,6 @@ fs = <span class="hljs-built_in">require</span>(<span class="hljs-string">'fs'</
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-2">&#182;</a>
-              </div>
-              <p>Writes a row in the csv file.</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>    target.<span class="hljs-function"><span class="hljs-title">writeRow</span> = <span class="hljs-params">(row)</span> -&gt;</span>
-      target._csv.writer.write(row)
-
-    target._csv = options
-    target._csv.writer = csv.createWriteStream()
-    target._csv.writer.pipe fs.createWriteStream target._csv.path, {<span class="hljs-attribute">encoding</span>: <span class="hljs-string">'utf8'</span>}
-    <span class="hljs-keyword">if</span> target._csv.headers?
-      target.writeRow target._csv.headers</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-3">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-3">&#182;</a>
               </div>
               <p>Finishes writing the csv when the pump finishes.</p>
 

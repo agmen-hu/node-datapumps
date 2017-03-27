@@ -2,7 +2,7 @@
 
 <html>
 <head>
-  <title>MysqlMixin.coffee</title>
+  <title>PostgresqlMixin.coffee</title>
   <meta http-equiv="content-type" content="text/html; charset=UTF-8">
   <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
   <link rel="stylesheet" media="all" href="docco.css" />
@@ -86,7 +86,7 @@
         
           <li id="title">
               <div class="annotation">
-                  <h1>MysqlMixin.coffee</h1>
+                  <h1>PostgresqlMixin.coffee</h1>
               </div>
           </li>
         
@@ -98,73 +98,64 @@
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-1">&#182;</a>
               </div>
-              <p>Mixin to query and write data to mysql.</p>
-<p>Please note that you don’t need this mixin when you only want to read data from mysql. Use the
-<code>.stream()</code> method of connection query.</p>
+              <p>Mixin to query and write data to postgresql.</p>
+<p>Please note that you don’t need this mixin when you only want to read data from postgresql. Wrap the
+query in the QueryStream of <code>pg-query-stream</code>.</p>
 <p>Usage:</p>
 <ul>
 <li><p>Load the mixin:</p>
-<pre><code class="lang-coffee">{ MysqlMixin } = <span class="hljs-built_in">require</span>(<span class="hljs-string">'datapumps/mixins'</span>)
+<pre><code class="lang-coffee">{ PostgresqlMixin } = <span class="hljs-built_in">require</span>(<span class="hljs-string">'datapumps/mixins'</span>)
 </code></pre>
 </li>
-<li><p>Add the mixin and set the mysql connection:</p>
+<li><p>Add the mixin and set the postgresql client:</p>
 <pre><code class="lang-coffee">pump
-  .mixin MysqlMixin myMysqlConnection
+  .mixin PostgresqlMixin postgresqlClient
 </code></pre>
 </li>
 <li><p>Use <code>.query()</code> method of the pump in <code>.process()</code></p>
 <pre><code class="lang-coffee">pump
   .process <span class="hljs-function"><span class="hljs-params">(data)</span> -&gt;</span>
-    <span class="hljs-property">@query</span> <span class="hljs-string">'INSERT INTO customer (name, address) VALUES (?)'</span>, [ data.name, data.address ]
+    <span class="hljs-property">@query</span> <span class="hljs-string">'INSERT INTO customer (name, address) VALUES ($1, $2)'</span>, [ data.name, data.address ]
 </code></pre>
-<p>The method returns a promise (it is the promisified version of <code>connection.query()</code>), so
+<p>The method returns a promise, so
 you can use it <code>.process()</code> callbacks (note that <code>.process()</code> callback must return a promise).</p>
-</li>
-<li><p>Use <code>.escape(value)</code> to escape value when query is built by concatenating strings</p>
-<pre><code class="lang-coffee">pump
-  .process <span class="hljs-function"><span class="hljs-params">(data)</span> -&gt;</span>
-    <span class="hljs-property">@query</span> <span class="hljs-string">'INSERT INTO customer (name) VALUES (#{@escape(data.name)})'</span>
-</code></pre>
 </li>
 </ul>
 <p>Complete example: Copy data from one table to another</p>
-<pre><code class="lang-coffee">{ Pump, <span class="hljs-attribute">mixin</span>: { MysqlMixin } } = <span class="hljs-built_in">require</span>(<span class="hljs-string">'datapumps'</span>)
-mysqlConnection = <span class="hljs-built_in">require</span>(<span class="hljs-string">'mysql'</span>).createConnection &lt;your-connection-string&gt;
+<pre><code class="lang-coffee">{ Pump, <span class="hljs-attribute">mixin</span>: { PostgresqlMixin } } = <span class="hljs-built_in">require</span>(<span class="hljs-string">'datapumps'</span>)
+QueryStream = <span class="hljs-built_in">require</span>(<span class="hljs-string">'pg-query-stream'</span>)
+Client = <span class="hljs-built_in">require</span>(<span class="hljs-string">'pg'</span>).Client
+postgresqlClient = <span class="hljs-keyword">new</span> Client &lt;your-connection-string&gt;
 
-mysqlCopy = <span class="hljs-keyword">new</span> Pump
-  .from mysqlConnection.query(<span class="hljs-string">'SELECT id,last_name,first_name FROM customer'</span>).stream()
-  .mixin MysqlMixin mysqlConnection
+postgresqlCopy = <span class="hljs-keyword">new</span> Pump
+  .from postgresqlClient.query(<span class="hljs-keyword">new</span> QueryStream <span class="hljs-string">'SELECT id,last_name,first_name FROM customer'</span>)
+  .mixin PostgresqlMixin postgresqlClient
   .process <span class="hljs-function"><span class="hljs-params">(customer)</span> -&gt;</span>
-    <span class="hljs-property">@query</span> <span class="hljs-string">'SELECT id FROM new_customer_table WHERE id = ? '</span>, p.id
+    <span class="hljs-property">@query</span> <span class="hljs-string">'SELECT id FROM new_customer_table WHERE id = $1 '</span>, p.id
       .<span class="hljs-keyword">then</span> <span class="hljs-function"><span class="hljs-params">([ result, fields ])</span> =&gt;</span>
         <span class="hljs-keyword">if</span> result.length == <span class="hljs-number">0</span>
           <span class="hljs-property">@query</span> <span class="hljs-string">'INSERT INTO new_customer_table
-            (id,last_name,first_name) VALUES (?)'</span>,
+            (id,last_name,first_name) VALUES ($1,$2,$3)'</span>,
             [ customer.id, customer.last_name, customer.first_name ]
         <span class="hljs-keyword">else</span>
           <span class="hljs-property">@query</span> <span class="hljs-string">'UPDATE new_customer_table
-            SET last_name=?, first_name = ?
-            WHERE id=?'</span>,
+            SET last_name=$1, first_name = $2
+            WHERE id=$3'</span>,
             customer.last_name, customer.first_name, customer.id
 </code></pre>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>Promise = <span class="hljs-built_in">require</span>(<span class="hljs-string">'bluebird'</span>)
-
-<span class="hljs-function"><span class="hljs-title">mysqlMixin</span> = <span class="hljs-params">(connection)</span> -&gt;</span>
-  <span class="hljs-keyword">if</span> !connection? <span class="hljs-keyword">or</span> <span class="hljs-keyword">typeof</span>(connection?.query) != <span class="hljs-string">'function'</span>
-    <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> Error <span class="hljs-string">'Mysql mixin requires connection to be given'</span>
+            <div class="content"><div class='highlight'><pre>
+<span class="hljs-function"><span class="hljs-title">postgresqlMixin</span> = <span class="hljs-params">(client)</span> -&gt;</span>
+  <span class="hljs-keyword">if</span> !client? <span class="hljs-keyword">or</span> <span class="hljs-keyword">typeof</span>(client?.query) != <span class="hljs-string">'function'</span>
+    <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> Error <span class="hljs-string">'Postgresql mixin requires client to be given'</span>
   <span class="hljs-function"><span class="hljs-params">(target)</span> -&gt;</span>
-    target._mysql =
-      <span class="hljs-attribute">connection</span>: connection
-      <span class="hljs-attribute">query</span>: Promise.promisify connection.query, connection
-
     target.<span class="hljs-function"><span class="hljs-title">query</span> = <span class="hljs-params">(query, args...)</span> -&gt;</span>
       <span class="hljs-keyword">if</span> args?
-        <span class="hljs-property">@_mysql</span>.query(query, args)
+        client.query(query, args)
       <span class="hljs-keyword">else</span>
-        <span class="hljs-property">@_mysql</span>.query(query)
+        client.query(query)
 
     target.<span class="hljs-function"><span class="hljs-title">selectOne</span> = <span class="hljs-params">(query, args...)</span> -&gt;</span>
       target.query(query, args)
@@ -176,10 +167,7 @@ mysqlCopy = <span class="hljs-keyword">new</span> Pump
           <span class="hljs-keyword">else</span>
             <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> Error(<span class="hljs-string">'Query returned more than one result'</span>)
 
-    target.<span class="hljs-function"><span class="hljs-title">escape</span> = <span class="hljs-params">(value)</span> -&gt;</span>
-      <span class="hljs-property">@_mysql</span>.connection.escape value
-
-<span class="hljs-built_in">module</span>.exports = mysqlMixin</pre></div></div>
+<span class="hljs-built_in">module</span>.exports = postgresqlMixin</pre></div></div>
             
         </li>
         

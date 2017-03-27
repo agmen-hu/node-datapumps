@@ -24,6 +24,11 @@
               </a>
             
               
+              <a class="source" href="BufferDebugMixin.html">
+                BufferDebugMixin.coffee
+              </a>
+            
+              
               <a class="source" href="CsvWriterMixin.html">
                 CsvWriterMixin.coffee
               </a>
@@ -56,6 +61,11 @@
               
               <a class="source" href="ObjectTransformMixin.html">
                 ObjectTransformMixin.coffee
+              </a>
+            
+              
+              <a class="source" href="PostgresqlMixin.html">
+                PostgresqlMixin.coffee
               </a>
             
               
@@ -138,6 +148,11 @@ mongo = Promise.promisifyAll <span class="hljs-built_in">require</span> <span cl
 
     _wrapMethod target, name <span class="hljs-keyword">for</span> name <span class="hljs-keyword">in</span> _wrappedMethods
     _wrapFind target
+
+    target.<span class="hljs-function"><span class="hljs-title">setGlobalDefaultMaxBsonSize</span> = <span class="hljs-params">(size)</span> -&gt;</span>
+     <span class="hljs-built_in">require</span>(<span class="hljs-string">'mongodb'</span>).Connection.DEFAULT_MAX_BSON_SIZE = size
+     <span class="hljs-built_in">require</span>(<span class="hljs-string">'mongodb'</span>).Connection.DEFAULT_MAX_MESSAGE_SIZE = size
+     @
 
     target.<span class="hljs-function"><span class="hljs-title">db</span> = -&gt;</span>
       <span class="hljs-property">@_mongo</span>.db</pre></div></div>
