@@ -278,6 +278,7 @@ The features required for import, export or transfer is provided by mixins:
  * [ExcelWriterMixin](http://agmen-hu.github.io/node-datapumps/docs/mixin/ExcelWriterMixin.html) - Writes excel xlsx workbooks
  * [ExcelReaderMixin](http://agmen-hu.github.io/node-datapumps/docs/mixin/ExcelReaderMixin.html) - Reads excel xlsx workbooks
  * [MysqlMixin](http://agmen-hu.github.io/node-datapumps/docs/mixin/MysqlMixin.html) - Queries and writes mysql databases
+ * [PostgresqlMixin](http://agmen-hu.github.io/node-datapumps/docs/mixin/PostgresqlMixin.html) - Queries and writes postgresql databases
  * [MongodbMixin](http://agmen-hu.github.io/node-datapumps/docs/mixin/MongodbMixin.html) - Queries and writes mongodb
  * [RestMixin](http://agmen-hu.github.io/node-datapumps/docs/mixin/RestMixin.html) - Interact with REST services
 
