@@ -9,3 +9,4 @@ module.exports =
   MongodbMixin: require './MongodbMixin'
   RestMixin: require './RestMixin'
   BufferDebugMixin: require './BufferDebugMixin'
+  PostgresqlMixin: require './PostgresqlMixin'
