@@ -220,11 +220,14 @@ module.exports = class Pump extends EventEmitter
   logErrorsToLogger: (logger) ->
     @errorBuffer().on 'write', (errorRecord) =>
       name = errorRecord.pump ? '(root)'
-      if @_debug
-        logger.error "Error in pump #{name}:"
-        logger.error errorRecord.error.stack ? errorRecord.error
+      if logger.hasOwnProperty 'error'
+          if @_debug
+              logger.error "Error in pump #{name}:"
+              logger.error errorRecord.error.stack ? errorRecord.error
+          else
+              logger.error "Error in pump #{name}: #{errorRecord.error}"
       else
-        logger.error "Error in pump #{name}: #{errorRecord.error}"
+          @logErrorsToConsole()
     @
 
   debug: ->
