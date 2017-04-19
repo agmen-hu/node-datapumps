@@ -218,16 +218,15 @@ module.exports = class Pump extends EventEmitter
     @
 
   logErrorsToLogger: (logger) ->
+    if not (logger?.error instanceof Function)
+      throw new Error 'logger must have an .error() method'
     @errorBuffer().on 'write', (errorRecord) =>
       name = errorRecord.pump ? '(root)'
-      if logger.hasOwnProperty 'error'
-          if @_debug
-              logger.error "Error in pump #{name}:"
-              logger.error errorRecord.error.stack ? errorRecord.error
-          else
-              logger.error "Error in pump #{name}: #{errorRecord.error}"
+      if @_debug
+        logger.error "Error in pump #{name}:"
+        logger.error errorRecord.error.stack ? errorRecord.error
       else
-          @logErrorsToConsole()
+        logger.error "Error in pump #{name}: #{errorRecord.error}"
     @
 
   debug: ->
