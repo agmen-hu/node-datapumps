@@ -209,7 +209,7 @@ etlProcess
 Please note that you cannot use `.process` method on a group.
 
 ## Error handling
-Errors may occur while data is transfered between systems. Most of the time, you don't want to stop
+Errors may occur while data is transferred between systems. Most of the time, you don't want to stop
 on the first error but complete the transfer and re-run after fixing problems. Therefore
 the pump group has an error buffer (`.errorBuffer()`) which can hold ten error messages by default.
 When the error buffer fills up, `error` event is triggered and `.whenFinised()` promise is rejected:
@@ -236,6 +236,17 @@ group
   .logErrorsToConsole()
   .start();
 ```
+
+You can use the `.logErrorsToLogger()` helper method will configure the pump or group to print
+errors to a logger when processing finished:
+```js
+group
+  .logErrorsToLogger(logger)
+  .start();
+```
+
+This is useful for running the ETL on a server. The logger can be any logging method that contains
+an `.error()` method such as Winston, Log4js, etc.
 
 ### Debugging
 The following example shows a fingers-crossed type logging, i.e. debug logging is turned on

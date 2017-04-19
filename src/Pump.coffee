@@ -217,6 +217,19 @@ module.exports = class Pump extends EventEmitter
         console.log "Error in pump #{name}: #{errorRecord.error}"
     @
 
+  logErrorsToLogger: (logger) ->
+    @errorBuffer().on 'write', (errorRecord) =>
+      name = errorRecord.pump ? '(root)'
+      if logger.hasOwnProperty 'error'
+          if @_debug
+              logger.error "Error in pump #{name}:"
+              logger.error errorRecord.error.stack ? errorRecord.error
+          else
+              logger.error "Error in pump #{name}: #{errorRecord.error}"
+      else
+          @logErrorsToConsole()
+    @
+
   debug: ->
     @debugMode true
     @
