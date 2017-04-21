@@ -13,16 +13,16 @@ describe 'MongodbMixin(db)', ->
     target._mongo.db.foo.should.equal 'bar'
 
   it 'should connect to mongo if db is a string', ->
-    replacedConnectAsync = mongo.MongoClient.connectAsync
-    mongo.MongoClient.connectAsync = sinon.stub().returns
+    replacedConnectAsync = mongo.connectAsync
+    mongo.connectAsync = sinon.stub().returns
       then: ->
 
     target = {}
     mixin = MongodbMixin 'mongodb://127.0.0.1:27017/test'
     mixin target
 
-    mongo.MongoClient.connectAsync.calledOnce.should.be.true
-    mongo.MongoClient.connectAsync = replacedConnectAsync
+    mongo.connectAsync.calledOnce.should.be.true
+    mongo.connectAsync = replacedConnectAsync
 
   it 'should wrap collection methods into pump', ->
     mockDb =
@@ -42,8 +42,8 @@ describe 'MongodbMixin(db)', ->
 
   it 'should defer .find() calls until connection established', ->
     connectResolveCallbacks = []
-    replacedConnectAsync = mongo.MongoClient.connectAsync
-    mongo.MongoClient.connectAsync = sinon.stub().returns
+    replacedConnectAsync = mongo.connectAsync
+    mongo.connectAsync = sinon.stub().returns
       then: (cb) -> connectResolveCallbacks.push cb
       isPending: -> true
     mockDb =
@@ -69,12 +69,12 @@ describe 'MongodbMixin(db)', ->
     connectResolveCallbacks[1](mockDb)
     streamSpy.calledOnce.should.be.true
 
-    mongo.MongoClient.connectAsync = replacedConnectAsync
+    mongo.connectAsync = replacedConnectAsync
 
   it 'should defer .insert() calls until connection established', ->
     connectResolveCallbacks = []
-    replacedConnectAsync = mongo.MongoClient.connectAsync
-    mongo.MongoClient.connectAsync = sinon.stub().returns
+    replacedConnectAsync = mongo.connectAsync
+    mongo.connectAsync = sinon.stub().returns
       then: (cb) -> connectResolveCallbacks.push cb
       isPending: -> true
     mockDb =
@@ -97,4 +97,4 @@ describe 'MongodbMixin(db)', ->
     connectResolveCallbacks[1](mockDb)
     mockCollection.insertAsync.calledOnce.should.be.true
 
-    mongo.MongoClient.connectAsync = replacedConnectAsync
+    mongo.connectAsync = replacedConnectAsync
