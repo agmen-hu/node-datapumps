@@ -64,6 +64,6 @@ CsvWriterMixin = (options) ->
 
     # Finishes writing the csv when the pump finishes.
     target.on 'end', ->
-      target._csv.writer.write(null)
+      target._csv.writer.end()
 
 module.exports = CsvWriterMixin
